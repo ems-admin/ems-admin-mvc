@@ -15,7 +15,7 @@ ems-admin-mvc是ems-admin的单体SpringBoot版本，前后端未分离，前端
 [![GitHub stars](https://img.shields.io/github/stars/ems-admin/ems-admin-mvc.svg?style=social&label=Stars)](https://github.com/ems-admin/ems-admin-mvc)
 [![GitHub forks](https://img.shields.io/github/forks/ems-admin/ems-admin-mvc.svg?style=social&label=Fork)](https://github.com/ems-admin/ems-admin-mvc)
 
-[ems-admin-layui演示站点](http://ems-admin-mvc.facebook47.cn/)
+[ems-admin-mvc演示站点](http://ems-admin-mvc.facebook47.cn/)
 
 #### 支持功能
 
@@ -45,6 +45,7 @@ ems-admin-mvc是ems-admin的单体SpringBoot版本，前后端未分离，前端
 
 
 - [issues 问题反馈](https://github.com/ems-admin/ems-admin-mvc/issues)
+  (为方便管理，暂时只接受在github上面提交issues)
 
 
 - [更新日志](CHANGELOG.md)
