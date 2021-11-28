@@ -125,7 +125,6 @@
               //  删除tab
               element.on('tabDelete(tabs)', function (elem) {
                 const index = elem.index
-                console.log(index)
                 _this.ids.splice(index, 1)
                 _this.breads.splice(1, 1)
               })
@@ -152,8 +151,8 @@
       click: function (obj) {
         console.info(obj)
         if (obj.id === 'logout'){
-          localStorage.setItem('token', null)
-          localStorage.setItem('username', null)
+          sessionStorage.setItem('token', null)
+          sessionStorage.setItem('username', null)
           Cookies.set('token', null)
           window.location.href = '/login.html'
         }
