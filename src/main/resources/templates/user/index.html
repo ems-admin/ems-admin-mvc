@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en" style="height: 100%">
+<head>
+    <meta charset="UTF-8">
+    <title>用户管理</title>
+    <link rel="stylesheet" href="../../static/layui-v2.6.8/layui/css/layui.css"/>
+    <link rel="stylesheet" href="../../static/css/common.css"/>
+</head>
+<body class="body" style="padding: 20px;">
+<div id="app">
+    <div class="search-div">
+        <div class="layui-row" style="width: 100%;">
+            <div class="layui-col-sm8">
+                <div class="search-inline">
+                    <input type="text" class="layui-input search-input" v-model="blurry" placeholder="请输入用户名/昵称">
+                    <button type="button" class="layui-btn layui-btn-sm" @click="getUserTable">查询</button>
+                </div>
+            </div>
+            <div class="layui-col-sm4">
+                <div style="text-align: right;">
+                    <button type="button" class="layui-btn layui-btn-sm layui-btn-normal" @click="editUser">新增</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <table id="user" lay-filter="user"></table>
+</div>
+</body>
+<script src="../../static/layui-v2.6.8/layui/layui.js"></script>
+<script src="../../static/js/axios.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
+<script src="../../static/js/vue3.js"></script>
+<script src="../../static/js/http.js"></script>
+<script src="../../static/js/common.js"></script>
+<script>
+  const app = {
+    data(){
+      return{
+        status: '',
+        blurry: ''
+      }
+    },
+    mounted: function () {
+      this.getUserTable()
+    },
+    methods: {
+      getUserTable(){
+        const _this = this
+        get('/sys/user/table', {blurry: _this.blurry}).then(res => {
+          if (res.success){
+            _this.$nextTick(function () {
+              const table = layui.table
+              _this.renderTable(table, res.data)
+            })
+          }
+        })
+      },
+      renderTable(table, data){
+        const _this = this
+        table.render({
+          elem: '#user',
+          id: 'user_id',
+          height: 'full-30',
+          page: true,
+          cols: [[
+            { type: 'numbers', title: '序号' },
+            { field: 'username', title: '用户名' },
+            { field: 'nickName', title: '昵称' },
+            { field: 'enabled', title: '状态', width: 100, templet: function (data) {
+                return data.enabled === true ? '启用' : '停用'
+              } },
+            { field: 'option', title: '操作', width: 180, align: 'center', templet: function (data) {
+                const status = data.enabled === false ? '启用' : '停用'
+                return '<a class="layui-btn layui-btn-xs layui-btn-warm" lay-event="status">'+status+'</a>' +
+                    '<a class="layui-btn layui-btn-xs" lay-event="edit">修改</a>' +
+                    '<a class="layui-btn layui-btn-xs layui-btn-danger" lay-event="del">删除</a>'
+              } },
+          ]],
+          data: data ? data : []
+        })
+
+        table.on('tool(user)', function (obj) {
+          if (obj.event === 'status'){
+            _this.changeStatus(obj.data.id, !obj.data.enabled)
+          } else if (obj.event === 'edit'){
+            _this.editUser(obj.data)
+          } else if (obj.event === 'del'){
+            _this.delUser(obj.data.id)
+          }
+        })
+      },
+      editUser(data){
+        layer.open({
+          type: 2,
+          title: '编辑用户',
+          area: ['800px', '450px'],
+          content: 'edit.html',
+          success: function (layero, index) {
+            const iframeWin = window[layero.find('iframe')[0]['name']]
+            //  将data传到子页面
+            iframeWin.getParentData(data)
+          }
+        })
+      },
+      changeStatus(id, enabled){
+        const _this = this
+        put('/sys/user/enabled', {id: id, enabled: enabled}).then(res => {
+          if (res.success){
+            successMsg(res.data)
+            _this.getUserTable()
+          } else {
+            errorMsg(res.msg)
+          }
+        })
+      },
+      delUser(id){
+        const _this = this
+        layer.confirm('确认删除用户？',{
+          btn: ['确认', '取消']
+        }, function () {
+          remove('/sys/user/del', {id: id}).then(res => {
+            if (res.success){
+              successMsg(res.data)
+              _this.getUserTable()
+            } else {
+              errorMsg(res.data)
+            }
+          })
+        }, function () {
+          infoMsg('已取消')
+        })
+      }
+    }
+  }
+  const vue = Vue.createApp(app).mount('#app')
+  //  子页面调用方法
+  function getChild(){
+    vue.getUserTable()
+  }
+</script>
+</html>

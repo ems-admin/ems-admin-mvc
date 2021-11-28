@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en" style="height: 100%">
+<head>
+    <meta charset="UTF-8">
+    <title>EMS-ADMIN</title>
+    <link rel="stylesheet" href="../static/layui-v2.6.8/layui/css/layui.css"/>
+    <link rel="stylesheet" href="../static/css/common.css"/>
+    <link rel="shortcut icon" type="image/x-icon" href="../static/image/logo.ico">
+</head>
+<body class="body">
+<div id="app" class="login-div">
+    <form class="layui-form login-form">
+        <h1 class="login-head">登    录</h1>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <input type="text" name="username" lay-verify="required" class="layui-input login-input" placeholder="请输入用户名">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <input type="password" name="password" lay-verify="required" class="layui-input login-input" placeholder="请输入密码">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <button type="button" class="layui-btn layui-btn-fluid login-input" lay-submit lay-filter="login" @click="login">登     录</button>
+            </div>
+        </div>
+    </form>
+</div>
+</body>
+<script src="../static/layui-v2.6.8/layui/layui.js"></script>
+<script src="../static/js/axios.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
+<script src="../static/js/http.js"></script>
+<script src="../static/js/vue3.js"></script>
+<script src="../../static/js/common.js"></script>
+<script>
+  const app = {
+    methods: {
+      login(){
+        const _this = this
+        _this.$nextTick(function () {
+          layui.use('form', function () {
+            const form = layui.form
+            form.on('submit(login)', function (data) {
+              post('/auth/login', data.field).then(res => {
+                if (res.success){
+                  Cookies.set('token', 'Bearer ' + res.data.token)
+                  sessionStorage.setItem('token', 'Bearer ' + res.data.token)
+                  sessionStorage.setItem("username", res.data.userDto.nickName)
+                  window.location.href = "/main.html"
+                } else {
+                  errorMsg(res.data)
+                }
+              })
+            })
+            return false
+          })
+        })
+      }
+    }
+  }
+  Vue.createApp(app).mount('#app')
+</script>
+<style>
+    .layui-inline{
+        padding-left: 10px;
+    }
+</style>
+</html>

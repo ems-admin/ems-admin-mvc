@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>角色授权</title>
+    <link rel="stylesheet" href="../../static/layui-v2.6.8/layui/css/layui.css"/>
+    <link rel="stylesheet" href="../../static/css/common.css"/>
+</head>
+<body class="body" style="padding-top: 30px;padding-left: 50px;padding-right: 50px;">
+<div id="app">
+    <div id="tree" style="height: 260px;"></div>
+    <div class="btn-div">
+        <button class="layui-btn layui-btn-sm layui-btn-primary btn-save" @click="cancel">取消</button>
+        <button class="layui-btn layui-btn-sm layui-btn-normal btn-save" @click="authorize">授权</button>
+    </div>
+</div>
+</body>
+<script src="../../static/layui-v2.6.8/layui/layui.js"></script>
+<script src="../../static/js/axios.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
+<script src="../../static/js/http.js"></script>
+<script src="../../static/js/vue3.js"></script>
+<script src="../../static/js/common.js"></script>
+<script>
+  const app = {
+    data(){
+      return{
+        roleId: '',
+        menuIds: []
+      }
+    },
+    mounted: function () {
+
+    },
+    methods: {
+      getMenuTree() {
+        const _this = this
+        get('/sys/menu/role/tree', {roleId: _this.roleId}).then(res => {
+          if (res.success){
+            _this.$nextTick(function () {
+              const tree = layui.tree
+              _this.renderTree(tree, res.data)
+            })
+          }
+        })
+
+      },
+      renderTree(tree, data){
+        tree.render({
+          elem: '#tree',
+          id: 'tree_id',
+          data: data,
+          showCheckbox: true,
+          accordion: true
+        })
+      },
+      authorize(){
+        const _this = this
+        _this.$nextTick(function () {
+          const tree = layui.tree
+          //获得选中的节点
+          const checkData = tree.getChecked('tree_id')
+          console.info(checkData)
+          _this.menuIds = []
+          _this.menuIds = _this.getChildNodes(checkData, _this.menuIds)
+          post('/sys/role/menu/edit', {roleId: _this.roleId, menuIds: _this.menuIds}).then(res => {
+            if (res.success){
+              _this.cancel()
+              _this.getMenuTree()
+              successMsg(res.data)
+            } else {
+              errorMsg(res.msg)
+            }
+          })
+        })
+        successMsg('授权成功')
+      },
+      getChildNodes(treeNode, result){
+        const _this = this
+        for (const i in treeNode) {
+          result.push(treeNode[i].id)
+          result = _this.getChildNodes(treeNode[i].children, result)
+        }
+        return result
+      },
+      cancel(){
+        window.parent.layer.closeAll()
+      }
+    }
+  }
+  const vue = Vue.createApp(app).mount('#app')
+
+  function getParentData(roleId){
+      vue.roleId = roleId
+      vue.getMenuTree()
+  }
+</script>
+</html>

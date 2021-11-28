@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en" style="height: 100%;">
+<head>
+    <meta charset="UTF-8">
+    <title>EMS-ADMIN</title>
+  <link rel="stylesheet" href="../static/layui-v2.6.8/layui/css/layui.css"/>
+  <link rel="stylesheet" href="../static/css/common.css"/>
+  <link rel="shortcut icon" type="image/x-icon" href="../static/image/logo.ico">
+</head>
+<body class="body">
+<div id="app" class="layui-row body">
+  <!--侧边导航-->
+  <div style="width: 200px;">
+    <ul class="layui-nav layui-nav-tree layui-nav-side" lay-filter="menu">
+      <div class="menu-head">
+        <img src="../static/image/logo.png" style="height: 40px;">
+        <span>EMS-ADMIN</span>
+      </div>
+      <li v-for="(menu, index) in menuList" :key="index" class="layui-nav-item">
+        <a href="javascript:" :id="menu.id" :type="menu.type">{{menu.name}}</a>
+        <dl v-if="menu.children.length > 0" class="layui-nav-child layui-nav-child-c">
+          <dd v-for="(child, index) in menu.children" :key="index">
+            <a href="javascript:" :id="child.id" :type="child.type" :rel="child.path">{{child.name}}</a>
+          </dd>
+        </dl>
+      </li>
+    </ul>
+  </div>
+  <div style="padding-left: 200px;" class="body">
+    <!--头-->
+    <div class="layui-row head">
+      <div class="layui-col-md6" style="margin-left: 10px;">
+        <!--面包屑-->
+      </div>
+      <div class="layui-col-md6">
+        <div style="float: right;margin-right: 50px;">
+          <span id="username" class="username">{{username}}</span>
+        </div>
+      </div>
+    </div>
+    <!--tab页面-->
+    <div class="tab">
+      <div class="layui-tab" lay-allowClose="true" lay-filter="tabs">
+        <ul class="layui-tab-title"></ul>
+        <div class="layui-tab-content">
+          <div class="layui-table-item layui-show"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+<script src="../static/layui-v2.6.8/layui/layui.js"></script>
+<script src="../static/js/axios.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
+<script src="../static/js/http.js"></script>
+<script src="../static/js/vue3.js"></script>
+<script>
+  const app = {
+    data(){
+      return{
+        menuList: [],
+        ids: [0],
+        breads: ['首页'],
+        username: sessionStorage.getItem('username')
+      }
+    },
+    mounted: function () {
+      this.getHome()
+    },
+    methods: {
+      getHome(){
+        const _this = this
+        _this.$nextTick(function () {
+          layui.use(['element', 'jquery'], function () {
+            const element = layui.element
+            const $ = layui.jquery
+            //  添加首页
+            element.tabAdd('tabs', {
+              title: '首页',
+              content: createIframe('index.html'),
+              id: 0
+            })
+            //  切换至首页
+            element.tabChange('tabs', 0)
+            //  隐藏首页关闭按钮
+            $(".layui-tab ul").children('li').first().children('.layui-tab-close').css("display",'none');
+            _this.getMenuTree(element)
+          })
+        })
+      },
+      getMenuTree(element){
+        const _this = this
+        get('/sys/menu/tree', null).then(res => {
+          if (res.success){
+            console.info(res.data)
+            _this.menuList = res.data
+            _this.$nextTick(function () {
+              //  监听事件
+              element.on('nav(menu)', function (elem) {
+                const id = elem.context.id
+                const type = elem.context.type
+                const title = elem.context.innerText
+                let url = elem.context.rel
+
+                //  新增tab
+                if (_this.ids.indexOf(id) === -1){
+                  if (type === '2'){
+                    element.tabAdd('tabs', {
+                      title: title,
+                      content: createIframe(url),
+                      id: id
+                    })
+                    _this.ids.push(id)
+                    _this.breads.push(title)
+                  } else if (type === '1'){
+                    _this.breads = []
+                    _this.breads.push(title)
+                  }
+                }
+                //  切换至当前tab
+                element.tabChange('tabs', id)
+              })
+
+              //  删除tab
+              element.on('tabDelete(tabs)', function (elem) {
+                const index = elem.index
+                console.log(index)
+                _this.ids.splice(index, 1)
+                _this.breads.splice(1, 1)
+              })
+              //  重新渲染
+              element.render('nav')
+            })
+          }
+        })
+      }
+    }
+  }
+  Vue.createApp(app).mount('#app')
+
+  layui.use('dropdown', function () {
+    const dropdown = layui.dropdown
+    dropdown.render({
+      elem: '#username',
+      align: 'center',
+      data: [{
+        title: '退出',
+        id: 'logout',
+      }],
+      style: 'text-align: center;',
+      click: function (obj) {
+        console.info(obj)
+        if (obj.id === 'logout'){
+          localStorage.setItem('token', null)
+          localStorage.setItem('username', null)
+          Cookies.set('token', null)
+          window.location.href = '/login.html'
+        }
+      }
+    })
+  })
+  function createIframe(url){
+    return '<iframe src="'+url+'" class="iframe" frameborder="0" scrolling="no"></iframe>'
+  }
+</script>
+<style>
+  .layui-tab{
+    margin: 0;
+  }
+  .layui-tab-content{
+    padding: 0;
+  }
+  .username{
+    cursor: pointer;
+    font-size: 18px;
+    color: #009688;
+  }
+</style>
+</html>

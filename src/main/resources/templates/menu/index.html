@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en" style="height: 100%">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+  <link rel="stylesheet" href="../../static/layui-v2.6.8/layui/css/layui.css"/>
+  <link rel="stylesheet" href="../../static/css/common.css"/>
+</head>
+<body class="body" style="padding: 20px;">
+<div id="app" class="body">
+  <div class="search-div">
+    <div class="layui-row" style="width: 100%;">
+      <div class="layui-col-sm8">
+        <div class="search-inline">
+          <input type="text" class="layui-input search-input" v-model="blurry" placeholder="请输入菜单名称">
+          <button type="button" class="layui-btn layui-btn-sm" @click="getTableTree">查询</button>
+        </div>
+      </div>
+      <div class="layui-col-sm4">
+        <div style="text-align: right;">
+          <button type="button" class="layui-btn layui-btn-sm layui-btn-normal" @click="editMenu">新增</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <table id="menu"></table>
+</div>
+</body>
+<script src="../../static/layui-v2.6.8/layui/layui.js"></script>
+<script src="../../static/js/axios.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
+<script src="../../static/js/http.js"></script>
+<script src="../../static/js/vue3.js"></script>
+<script src="../../static/js/common.js"></script>
+<script>
+  const app = {
+    data(){
+      return{
+        menuName: '',
+        blurry: ''
+      }
+    },
+    mounted: function () {
+      this.getTableTree()
+    },
+    methods: {
+      getTableTree(){
+        const _this = this
+        get('/sys/menu/table/tree', {blurry: _this.blurry}).then(res => {
+          if (res.success){
+            _this.$nextTick(function () {
+              layui.config({
+                base: '../../static/js/'
+              }).use(['treeTable','jquery', 'table'], function () {
+                const treeTable = layui.treeTable
+                _this.renderTable(treeTable, res.data)
+              })
+            })
+          }
+        })
+      },
+      renderTable(treeTable, data){
+        const _this = this
+        treeTable.render({
+          elem: '#menu',
+          height: 'full-70',
+          tree: {
+            iconIndex: 2,
+            isPidData: true,
+            idName: 'id',
+            pidName: 'parentId',
+          },
+          cols: [[
+            { field: 'id', title: 'ID', hide: true},
+            { field: 'parentId', title: '父级ID', hide: true},
+            { field: 'name', title: '菜单名称'},
+            { field: 'path', title: '菜单路径'},
+            { field: 'type', title: '菜单类型', width: 120, templet: function (d) {
+                if (d.type === '1'){
+                  return '菜单'
+                } else if (d.type === '2'){
+                  return '页面'
+                } else if (d.type === '3'){
+                  return '按钮'
+                }
+              }},
+            { field: 'sort', title: '排序', width: 120,},
+            { field: 'option', title: '操作', align: 'center', width:120, templet: function (d) {
+                return '<a class="layui-btn layui-btn-xs" lay-event="edit">修改</a>' +
+                        '<a class="layui-btn layui-btn-xs layui-btn-danger" lay-event="del">删除</a>'
+              }},
+          ]],
+          data: data,
+        })
+
+        treeTable.on('tool(menu)', function (obj) {
+          if (obj.event === 'edit'){
+            _this.editMenu(obj.data)
+          } else if (obj.event === 'del'){
+            _this.delMenu(obj.data.id)
+          }
+        })
+      },
+      editMenu(data){
+        layer.open({
+          type: 2,
+          title: '编辑菜单',
+          area: ['800px', '400px'],
+          content: 'edit.html',
+          success: function (layero, index) {
+            const iframeWin = window[layero.find('iframe')[0]['name']]
+            //  将data传到子页面
+            iframeWin.getParentData(data)
+          }
+        })
+      },
+      delMenu(id){
+        const _this = this
+        remove('/sys/menu/del', {id: id}).then(res => {
+          if (res.success){
+            successMsg(res.data)
+            _this.getTableTree()
+          } else {
+            errorMsg(res.data)
+          }
+        })
+      }
+    }
+  }
+  const vue = Vue.createApp(app).mount('#app')
+
+  //  子页面调用方法
+  function getChild(){
+    vue.getTableTree()
+  }
+</script>
+<style>
+  .ew-tree-table{
+    height: calc(100vh - 70px)
+  }
+</style>
+</html>
