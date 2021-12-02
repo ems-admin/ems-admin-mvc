@@ -51,7 +51,7 @@
                   sessionStorage.setItem("username", res.data.userDto.nickName)
                   window.location.href = "/main.html"
                 } else {
-                  errorMsg(res.data)
+                  errorMsg(res.msg)
                 }
               })
             })
