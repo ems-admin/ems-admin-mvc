@@ -75,11 +75,17 @@
         })
         successMsg('授权成功')
       },
+      //  只获取最下级子节点，防止获取上级目录，渲染的时候会将该上级目录的所有下级目录勾选
       getChildNodes(treeNode, result){
         const _this = this
         for (const i in treeNode) {
-          result.push(treeNode[i].id)
-          result = _this.getChildNodes(treeNode[i].children, result)
+          if (treeNode[i].children && treeNode[i].children.length === 0){
+            result.push(treeNode[i].id)
+          } else {
+            _this.getChildNodes(treeNode[i].children, result)
+          }
+          // result.push(treeNode[i].id)
+          // result = _this.getChildNodes(treeNode[i].children, result)
         }
         return result
       },

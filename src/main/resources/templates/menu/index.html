@@ -116,13 +116,19 @@
       },
       delMenu(id){
         const _this = this
-        remove('/sys/menu/del', {id: id}).then(res => {
-          if (res.success){
-            successMsg(res.data)
-            _this.getTableTree()
-          } else {
-            errorMsg(res.data)
-          }
+        layer.confirm('确认删除菜单？', {
+          btn: ['确认', '取消']
+        }, function () {
+          remove('/sys/menu/del', {id: id}).then(res => {
+            if (res.success){
+              successMsg(res.data)
+              _this.getTableTree()
+            } else {
+              errorMsg(res.msg)
+            }
+          })
+        }, function () {
+          infoMsg('操作已取消')
         })
       }
     }

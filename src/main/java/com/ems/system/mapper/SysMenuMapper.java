@@ -41,5 +41,5 @@ public interface SysMenuMapper extends BaseMapper<SysMenu> {
     * @Author: starao
     * @Date: 2021/11/28
     */
-    List<String> getMenuTreeByRoleId(@Param("roleId") String roleId);
+    List<Long> getMenuTreeByRoleId(@Param("roleId") String roleId);
 }

@@ -7,7 +7,9 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.ems.common.constant.CommonConstants;
 import com.ems.common.exception.BadRequestException;
 import com.ems.system.entity.SysMenu;
+import com.ems.system.entity.SysRoleMenu;
 import com.ems.system.mapper.SysMenuMapper;
+import com.ems.system.mapper.SysRoleMenuMapper;
 import com.ems.system.service.SysMenuService;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
@@ -29,6 +31,8 @@ import java.util.stream.Collectors;
 public class SysMenuServiceImpl implements SysMenuService {
 
     private final SysMenuMapper menuMapper;
+
+    private final SysRoleMenuMapper roleMenuMapper;
 
     /**
      * @param roles
@@ -141,6 +145,17 @@ public class SysMenuServiceImpl implements SysMenuService {
     @Override
     public void delMenu(Long id) {
         try {
+            LambdaQueryWrapper<SysMenu> wrapper = new LambdaQueryWrapper<>();
+            wrapper.eq(SysMenu::getId, id);
+            wrapper.or();
+            wrapper.eq(SysMenu::getParentId, id);
+            List<SysMenu> list = menuMapper.selectList(wrapper);
+            if (!CollectionUtils.isEmpty(list)){
+                list.forEach(sysMenu -> {
+                    //  校验是否绑定了角色
+                    checkMenuRole(sysMenu.getId());
+                });
+            }
             menuMapper.deleteById(id);
         } catch (BadRequestException e) {
             e.printStackTrace();
@@ -160,7 +175,7 @@ public class SysMenuServiceImpl implements SysMenuService {
     public JSONArray getMenuTreeByRoleId(String roleId) {
         try {
             //  当前角色菜单
-            List<String> menuList = menuMapper.getMenuTreeByRoleId(roleId);
+            List<Long> menuList = menuMapper.getMenuTreeByRoleId(roleId);
             //  所有菜单
             List<SysMenu> allMenuList = menuMapper.selectList(null);
             return getObjects(allMenuList, 0l, "title", menuList);
@@ -225,7 +240,7 @@ public class SysMenuServiceImpl implements SysMenuService {
      * @Author: starao
      * @Date: 2021/11/28
      */
-    public JSONArray getChildMenu(List<SysMenu> menuListAll, Long id, String title, List<String> menuIds){
+    public JSONArray getChildMenu(List<SysMenu> menuListAll, Long id, String title, List<Long> menuIds){
         try {
             return getObjects(menuListAll, id, title, menuIds);
         } catch (BadRequestException e) {
@@ -241,10 +256,10 @@ public class SysMenuServiceImpl implements SysMenuService {
      * @Author: starao
      * @Date: 2021/11/28
      */
-    private JSONArray getObjects(List<SysMenu> menuListAll, Long id, String title, List<String> menuIds) {
+    private JSONArray getObjects(List<SysMenu> menuListAll, Long id, String title, List<Long> menuIds) {
         try {
             //  获取子菜单
-            List<SysMenu> childList = menuListAll.stream().filter(menu -> menu.getParentId().equals(id)).collect(Collectors.toList());
+            List<SysMenu> childList = menuListAll.stream().filter(menu -> menu.getParentId().longValue() == id.longValue()).collect(Collectors.toList());
             //  组装树
             JSONArray jsonArray = new JSONArray();
             childList.forEach(menu -> {
@@ -263,12 +278,33 @@ public class SysMenuServiceImpl implements SysMenuService {
                     jsonObject.put("open", false);
                     jsonObject.put("checked", false);
                 }
-                if (menuListAll.stream().anyMatch(menu1 -> menu1.getParentId().equals(id))) {
+                if (menuListAll.stream().anyMatch(menu1 -> menu1.getParentId().longValue() == id.longValue())) {
                     jsonObject.put("children", getChildMenu(menuListAll, menu.getId(), title, menuIds));
                 }
                 jsonArray.add(jsonObject);
             });
             return jsonArray;
+        } catch (BadRequestException e) {
+            e.printStackTrace();
+            throw new BadRequestException(e.getMsg());
+        }
+    }
+
+    /**
+     * @Description: 校验是否绑定了角色
+     * @Param: [menuId]
+     * @return: void
+     * @Author: starao
+     * @Date: 2021/12/4
+     */
+    private void checkMenuRole(Long menuId){
+        try {
+            LambdaQueryWrapper<SysRoleMenu> wrapper = new LambdaQueryWrapper<>();
+            wrapper.eq(SysRoleMenu::getMenuId, menuId);
+            long count = roleMenuMapper.selectCount(wrapper);
+            if (count > 0){
+                throw new BadRequestException("菜单或子菜单已绑定角色，无法删除");
+            }
         } catch (BadRequestException e) {
             e.printStackTrace();
             throw new BadRequestException(e.getMsg());

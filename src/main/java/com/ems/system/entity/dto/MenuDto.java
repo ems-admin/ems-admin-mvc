@@ -19,7 +19,7 @@ public class MenuDto {
 
     private String url;
 
-    private String parentId;
+    private Long parentId;
 
     private int sort;
 

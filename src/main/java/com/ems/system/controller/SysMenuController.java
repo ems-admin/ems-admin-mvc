@@ -5,6 +5,7 @@ import com.ems.common.utils.ResultUtil;
 import com.ems.common.utils.SecurityUtil;
 import com.ems.logs.annotation.Log;
 import com.ems.system.entity.SysMenu;
+import com.ems.system.mapper.SysRoleMenuMapper;
 import com.ems.system.service.SysMenuService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -132,7 +133,7 @@ public class SysMenuController extends ResultUtil {
             return success(true, "删除成功");
         } catch (BadRequestException e) {
             e.printStackTrace();
-            return fail(false, "删除失败");
+            return fail(false, e.getMsg());
         }
     }
 

@@ -33,7 +33,7 @@
     </select>
 
     <!--根据角色获取菜单-->
-    <select id="getMenuTreeByRoleId" resultType="java.lang.String">
+    <select id="getMenuTreeByRoleId" resultType="java.lang.Long">
         SELECT t1.id FROM sys_menu t1 LEFT JOIN sys_role_menu t2 ON t1.ID=t2.menu_id WHERE t2.role_id = #{roleId}
     </select>
 

@@ -19,7 +19,7 @@
     <div class="layui-form-item">
       <div class="layui-form-label">角色代码</div>
       <div class="layui-inline">
-        <input class="layui-input layui-input-form" lay-verify="required" name="roleCode" placeholder="请输入角色代码">
+        <input class="layui-input layui-input-form" lay-verify="required" name="roleCode" placeholder="请输入角色代码" :disabled="isAdmin">
       </div>
     </div>
     <div class="layui-form-item">
@@ -47,7 +47,7 @@
   const app = {
     data(){
       return{
-
+        isAdmin: false
       }
     },
     mounted: function () {
@@ -65,7 +65,7 @@
                 window.parent.getChild()
                 _this.cancel()
               } else {
-                errorMsg(res.data)
+                errorMsg(res.msg)
               }
             })
             return false
@@ -77,11 +77,13 @@
       }
     }
   }
-  Vue.createApp(app).mount('#app')
+  const vue = Vue.createApp(app).mount('#app')
 
   //  获取父页面的传值
   function getParentData(data) {
+    vue.isAdmin = false
     if (data && data.id){
+      vue.isAdmin = data.roleCode === 'ROLE_ADMIN'
       const form = layui.form
       form.val('form', data)
     }

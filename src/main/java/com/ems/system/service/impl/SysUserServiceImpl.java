@@ -102,15 +102,15 @@ public class SysUserServiceImpl implements SysUserService {
      * @Date: 2021/11/28
      */
     @Override
-    public List<SysUser> queryUserTable(String blurry) {
+    public List<UserDto> queryUserTable(String blurry) {
         try {
-            LambdaQueryWrapper<SysUser> wrapper = new LambdaQueryWrapper<>();
-            if (StringUtil.isNotBlank(blurry)){
-                wrapper.like(SysUser::getUsername, blurry);
-                wrapper.or();
-                wrapper.like(SysUser::getNickName, blurry);
-            }
-            return sysUserMapper.selectList(wrapper);
+//            LambdaQueryWrapper<SysUser> wrapper = new LambdaQueryWrapper<>();
+//            if (StringUtil.isNotBlank(blurry)){
+//                wrapper.like(SysUser::getUsername, blurry);
+//                wrapper.or();
+//                wrapper.like(SysUser::getNickName, blurry);
+//            }
+            return sysUserMapper.queryUserTable(blurry);
         } catch (BadRequestException e) {
             e.printStackTrace();
             throw new BadRequestException(e.getMsg());

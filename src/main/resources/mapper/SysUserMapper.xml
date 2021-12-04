@@ -2,13 +2,23 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.ems.system.mapper.SysUserMapper">
 
-  <!-- 通用查询结果列 -->
-  <!--
-  <sql id="Base_Column_List">
-      role_id, name, level, description, data_scope, create_by, update_by, create_time, update_time
-  </sql>
-  -->
+    <!--构造一个对象，里面只有一个字段，且为String类型-->
+    <resultMap id="roles" type="java.lang.String">
+        <result column="roles" property="roles" jdbcType="VARCHAR"></result>
+    </resultMap>
 
+    <!--将上面构造的对象放进另一个对象中-->
+    <resultMap id="userResult" type="com.ems.system.entity.dto.UserDto">
+        <result column="id" property="id" jdbcType="BIGINT"></result>
+        <result column="username" property="username" jdbcType="VARCHAR"></result>
+        <result column="password" property="password" jdbcType="VARCHAR"></result>
+        <result column="email" property="email" jdbcType="VARCHAR"></result>
+        <result column="nickName" property="nickName" jdbcType="VARCHAR"></result>
+        <result column="enabled" property="enabled" jdbcType="BOOLEAN"></result>
+        <association property="roles" resultMap="roles"></association>
+    </resultMap>
+
+    <!--通过用户名查询用户对象-->
     <select id="loadByName" resultType="com.ems.system.entity.dto.UserDto">
         select * from sys_user
         <where>
@@ -16,6 +26,32 @@
                 username = #{username}
             </if>
         </where>
+    </select>
+
+    <!--查询用户列表-->
+    <select id="queryUserTable" resultMap="userResult">
+        SELECT
+        t1.id,
+        t1.email,
+        t1.enabled,
+        t1.nick_name AS nickName,
+        t1.username,
+        GROUP_CONCAT( t3.role_code SEPARATOR ',' ) AS roles
+        FROM
+        sys_user t1
+        LEFT JOIN sys_role_user t2 ON t1.id = t2.user_id
+        LEFT JOIN sys_role t3 ON t2.role_id = t3.id
+        <where>
+            <if test="blurry != null and blurry != ''">
+                t1.username = #{blurry} OR t1.nick_name = ${blurry}
+            </if>
+        </where>
+        GROUP BY
+        t1.id,
+        t1.email,
+        t1.enabled,
+        t1.username,
+        t1.nick_name
     </select>
 
 </mapper>
