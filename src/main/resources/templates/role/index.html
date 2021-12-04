@@ -81,7 +81,7 @@
                 } else if (obj.event === 'del'){
                     _this.delRole(obj.data.id)
                 } else if (obj.event === 'authorize'){
-                    _this.authorize(obj.data.id)
+                    _this.authorize(obj.data.id, obj.data.roleCode)
                 }
             })
         },
@@ -115,10 +115,14 @@
                 infoMsg('操作已取消')
             })
         },
-        authorize(id){
+        authorize(id, roleCode){
+          if (roleCode === 'ROLE_ADMIN'){
+            waringMsg('超级管理员拥有所有菜单权限，无需授权！')
+            return false
+          }
             layer.open({
                 type: 2,
-                title: '编辑菜单',
+                title: '角色授权',
                 area: ['800px', '400px'],
                 content: 'authorize.html',
                 success: function (layero, index) {
