@@ -31,6 +31,12 @@
     <div class="layui-row head">
       <div class="layui-col-md6" style="margin-left: 10px;">
         <!--面包屑-->
+        <span class="layui-breadcrumb">
+          <span  v-for="(item, index) in breads" :key="index" >
+            <a href="javascript:" @click="toHome(item.id)">{{item.name}}</a>
+            <span v-if="index < breads.length - 1" lay-separator>/</span>
+          </span>
+        </span>
       </div>
       <div class="layui-col-md6">
         <div style="float: right;margin-right: 50px;">
@@ -61,8 +67,9 @@
       return{
         menuList: [],
         ids: [0],
-        breads: ['首页'],
-        username: sessionStorage.getItem('username')
+        breads: [{id: 0, name: '首页'}],
+        username: sessionStorage.getItem('username'),
+        element: null,
       }
     },
     mounted: function () {
@@ -73,31 +80,30 @@
         const _this = this
         _this.$nextTick(function () {
           layui.use(['element', 'jquery'], function () {
-            const element = layui.element
+            _this.element = layui.element
             const $ = layui.jquery
             //  添加首页
-            element.tabAdd('tabs', {
+            _this.element.tabAdd('tabs', {
               title: '首页',
               content: createIframe('index.html'),
               id: 0
             })
             //  切换至首页
-            element.tabChange('tabs', 0)
+            _this.element.tabChange('tabs', 0)
             //  隐藏首页关闭按钮
             $(".layui-tab ul").children('li').first().children('.layui-tab-close').css("display",'none');
-            _this.getMenuTree(element)
+            _this.getMenuTree()
           })
         })
       },
-      getMenuTree(element){
+      getMenuTree(){
         const _this = this
         get('/sys/menu/tree', null).then(res => {
           if (res.success){
-            console.info(res.data)
             _this.menuList = res.data
             _this.$nextTick(function () {
               //  监听事件
-              element.on('nav(menu)', function (elem) {
+              _this.element.on('nav(menu)', function (elem) {
                 const id = elem.context.id
                 const type = elem.context.type
                 const title = elem.context.innerText
@@ -106,33 +112,64 @@
                 //  新增tab
                 if (_this.ids.indexOf(id) === -1){
                   if (type === '2'){
-                    element.tabAdd('tabs', {
+                    _this.element.tabAdd('tabs', {
                       title: title,
                       content: createIframe(url),
                       id: id
                     })
                     _this.ids.push(id)
-                    _this.breads.push(title)
-                  } else if (type === '1'){
-                    _this.breads = []
-                    _this.breads.push(title)
+                    _this.getTitle(id)
                   }
                 }
                 //  切换至当前tab
-                element.tabChange('tabs', id)
+                _this.element.tabChange('tabs', id)
+                //  切换🍞屑
+                _this.element.on('tab(tabs)', function (data) {
+                  if (data.elem.context.attributes && data.elem.context.attributes.length > 0){
+                    _this.getTitle(data.elem.context.attributes[0].value)
+                  }
+                })
               })
 
               //  删除tab
-              element.on('tabDelete(tabs)', function (elem) {
+              _this.element.on('tabDelete(tabs)', function (elem) {
                 const index = elem.index
                 _this.ids.splice(index, 1)
                 _this.breads.splice(1, 1)
               })
               //  重新渲染
-              element.render('nav')
+              _this.element.render('nav')
             })
           }
         })
+      },
+      //  通过id获取对应的上下级，以生成🍞屑层级
+      getTitle(id){
+        const _this = this
+        _this.breads = []
+        _this.breads.push({
+          id: 0,
+          name: '首页'
+        })
+        if (id !== 0){
+          _this.menuList.forEach((item) => {
+            if (item.children && item.children.length > 0){
+              item.children.forEach((child) => {
+                if (child.id + '' === id){
+                  _this.breads.push(item)
+                  _this.breads.push(child)
+                }
+              })
+            }
+          })
+        }
+      },
+      toHome(id){
+        const _this = this
+        if (id === 0){
+          _this.element.tabChange('tabs', 0)
+          _this.getTitle(0)
+        }
       }
     }
   }
