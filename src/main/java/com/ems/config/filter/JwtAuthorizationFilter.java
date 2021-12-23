@@ -56,13 +56,13 @@ public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
                 //  将认证信息保存在spring安全上下文中
                 SecurityContextHolder.getContext().setAuthentication(authentication);
                 //  获取当前用户的菜单权限
-                List<String> menuList = menuService.getMenuUrlByRole(SecurityUtil.getCurrentRoles());
+//                List<String> menuList = menuService.getMenuUrlByRole(SecurityUtil.getCurrentRoles());
                 //  将主页菜单添加进来,因为主页不在授权页面中
-                menuList.add("/main.html");
-                menuList.add("/index.html");
-                if (!menuList.contains(request.getRequestURI()) && request.getRequestURI().endsWith(".html")){
-                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "没有访问权限");
-                }
+//                menuList.add("/main.html");
+//                menuList.add("/index.html");
+//                if (!menuList.contains(request.getRequestURI()) && request.getRequestURI().endsWith(".html")){
+//                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "没有访问权限");
+//                }
                 //  放行请求
                 filterChain.doFilter(request, response);
             } else {

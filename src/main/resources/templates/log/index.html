@@ -12,19 +12,19 @@
             <div class="layui-col-sm3">
                 <div class="search-inline">
                     <label class="label">用户名：</label>
-                    <input type="text" class="layui-input search-input" v-model="username" placeholder="">
+                    <input type="text" class="layui-input search-input" v-model="state.username" placeholder="">
                 </div>
             </div>
             <div class="layui-col-sm3">
                 <div class="search-inline">
                     <label class="label">说明：</label>
-                    <input type="text" class="layui-input search-input" v-model="description" placeholder="">
+                    <input type="text" class="layui-input search-input" v-model="state.description" placeholder="">
                 </div>
             </div>
             <div class="layui-col-sm3">
                 <div class="search-inline layui-form">
                     <label class="label">类型：</label>
-                    <select v-model="logType" lay-filter="logType">
+                    <select v-model="state.logType" lay-filter="logType">
                         <option value="">全部</option>
                         <option value="1">正常</option>
                         <option value="2">异常</option>
@@ -41,119 +41,134 @@
 </body>
 <script src="../../static/layui-v2.6.8/layui/layui.js"></script>
 <script src="../../static/js/axios.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
 <script src="../../static/js/http.js"></script>
 <script src="../../static/js/vue3.js"></script>
 <script src="../../static/js/common.js"></script>
 <script>
     const app = {
-        data(){
-            return{
-                curr: 1,
-                limit: 10,
-                total: 0,
-                username: '',
-                description: '',
-                logType: ''
-            }
-        },
-        mounted: function () {
-            this.getLogs()
-        },
-        methods: {
-            getPage(){
-                const _this = this
-                _this.$nextTick(function () {
-                    const laypage = layui.laypage
-                    laypage.render({
-                        elem: 'page',
-                        count: _this.total,
-                        curr: _this.curr,
-                        limit: _this.limit,
-                        limits: [10, 20, 50, 100, 200, 500, 1000],
-                        layout: [ 'prev', 'page', 'next', 'count','limit'],
-                        prev: "<",
-                        next: ">",
-                        jump: function (obj, first) {
-                            _this.curr = obj.curr
-                            _this.limit = obj.limit
-                            if (!first){
-                                _this.getLogs()
-                            }
-                        }
-                    })
-                })
-            },
-            getLogs(){
-                const _this = this
-                const getData = {
-                    current: _this.curr,
-                    size: _this.limit,
-                    username: _this.username,
-                    description: _this.description,
-                    logType: _this.logType
+      setup(){
+        const state = Vue.reactive({
+          curr: 1,
+          limit: 10,
+          total: 0,
+          username: '',
+          description: '',
+          logType: ''
+        })
+
+        Vue.onMounted(() => {
+          getLogs()
+        })
+
+        const getPage = () =>{
+            Vue.nextTick(() => {
+              const laypage = layui.laypage
+              laypage.render({
+                elem: 'page',
+                count: state.total,
+                curr: state.curr,
+                limit: state.limit,
+                limits: [10, 20, 50, 100, 200, 500, 1000],
+                layout: [ 'prev', 'page', 'next', 'count','limit'],
+                prev: "<",
+                next: ">",
+                jump: function (obj, first) {
+                  state.curr = obj.curr
+                  state.limit = obj.limit
+                  if (!first){
+                    getLogs()
+                  }
                 }
-                get('/sys/log/list', getData).then(res => {
-                    if (res.success){
-                        _this.$nextTick(function () {
-                            const table = layui.table
-                            _this.total = res.data.total
-                            _this.renderTable(table, res.data.records)
-                        })
-                    } else {
-                        errorMsg(res.msg)
-                    }
-                })
-            },
-            renderTable(table, data){
-                const _this = this
-                table.render({
-                    elem: '#log',
-                    id: 'log_id',
-                    height: 'full-120',
-                    limit: _this.limit,
-                    cols: [[
-                        {type: '', title: '序号', width: 60, templet: function (d) {
-                                return (_this.curr - 1) * _this.limit + d.LAY_INDEX
-                            }},
-                        {field: 'username', title: '用户名'},
-                        {field: 'description', title: '说明'},
-                        {field: 'logType', title: '类型', templet: function(d){
-                                if (d.logType === '1'){
-                                    return '正常'
-                                } else if (d.logType === '2'){
-                                    return '异常'
-                                }
-                            }},
-                        {field: 'method', title: '调用方法'},
-                        {field: 'params', title: '参数'},
-                        {field: 'ip', title: 'IP'},
-                        {field: 'time', title: '耗时(ms)'},
-                        {field: 'exceptionDetail', title: '错误信息'},
-                        {field: 'createTime', title: '操作时间'},
-                    ]],
-                    data: data ? data : [],
-                    done: function () {
-                        _this.getPage()
-                    }
-                })
-            }
+              })
+            })
         }
+
+        const getLogs = () => {
+          const getData = {
+              current: state.curr,
+              size: state.limit,
+              username: state.username,
+              description: state.description,
+              logType: state.logType
+          }
+          console.log('logType' + state.logType)
+          get('/sys/log/list', getData).then(res => {
+              if (res.success){
+                Vue.nextTick(() => {
+                  const table = layui.table
+                  state.total = res.data.total
+                  renderTable(table, res.data.records)
+                })
+              } else {
+                  errorMsg(res.msg)
+              }
+          })
+        }
+
+        const renderTable = (table, data) =>{
+            table.render({
+                elem: '#log',
+                id: 'log_id',
+                height: 'full-120',
+                limit: state.limit,
+                cols: [[
+                    {type: '', title: '序号', width: 60, templet: function (d) {
+                            return (state.curr - 1) * state.limit + d.LAY_INDEX
+                        }},
+                    {field: 'username', title: '用户名'},
+                    {field: 'description', title: '说明'},
+                    {field: 'logType', title: '类型', templet: function(d){
+                            if (d.logType === '1'){
+                                return '正常'
+                            } else if (d.logType === '2'){
+                                return '异常'
+                            }
+                        }},
+                    {field: 'method', title: '调用方法'},
+                    {field: 'params', title: '参数'},
+                    {field: 'ip', title: 'IP'},
+                    {field: 'time', title: '耗时(ms)'},
+                    {field: 'exceptionDetail', title: '错误信息'},
+                    {field: 'createTime', title: '操作时间'},
+                ]],
+                data: data ? data : [],
+                done: function () {
+                    getPage()
+                }
+            })
+        }
+        const selectLogType = (value) => {
+          state.logType = value
+        }
+
+        Vue.nextTick(() => {
+          //  监听select事件
+          const form = layui.form
+          form.on('select(logType)', function (data){
+            selectLogType(data.value)
+          })
+        })
+        return {
+          state,
+          getLogs,
+          selectLogType
+        }
+      }
     }
     Vue.createApp(app).mount('#app')
 </script>
 <style>
-    .layui-table-view{
-        margin-bottom: 0;
-        margin-top: 0;
-    }
-    .layui-laypage{
-        margin-top: 5px;
-        margin-bottom: 0;
-    }
+.layui-table-view{
+    margin-bottom: 0;
+    margin-top: 0;
+}
+.layui-laypage{
+    margin-top: 5px;
+    margin-bottom: 0;
+}
 
-    .layui-input{
-        height: 30px;
-    }
+.layui-input{
+    height: 30px;
+}
 </style>
 </html>

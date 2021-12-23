@@ -5,7 +5,9 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.ems.common.constant.CommonConstants;
 import com.ems.common.exception.BadRequestException;
+import com.ems.common.utils.SecurityUtil;
 import com.ems.common.utils.StringUtil;
 import com.ems.logs.annotation.Log;
 import com.ems.system.entity.SysLog;
@@ -16,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.lang.reflect.Method;
@@ -98,18 +101,23 @@ public class SysLogServiceImpl implements SysLogService {
      * @Date: 2021/11/28
      */
     @Override
+    @PreAuthorize("hasRole('ROLE_ADMIN') OR hasRole('ROLE_USER')")
     public IPage<SysLog> getLogList(LogDto logDto) {
         try {
             LambdaQueryWrapper<SysLog> wrapper = new LambdaQueryWrapper<>();
             wrapper.orderByDesc(SysLog::getCreateTime);
-            if (StringUtil.isNotBlank(logDto.getUsername())){
-                wrapper.like(SysLog::getUsername, logDto.getUsername());
+            if (SecurityUtil.getCurrentRoles().contains(CommonConstants.ROLE_ADMIN)){
+                if (StringUtil.isNotBlank(logDto.getDescription())){
+                    wrapper.like(SysLog::getUsername, logDto.getDescription());
+                }
+            } else {
+                wrapper.eq(SysLog::getUsername, SecurityUtil.getCurrentUsername());
             }
             if (StringUtil.isNotBlank(logDto.getDescription())){
                 wrapper.like(SysLog::getDescription, logDto.getDescription());
             }
             if (StringUtil.isNotBlank(logDto.getLogType())){
-                wrapper.ne(SysLog::getLogType, logDto.getLogType());
+                wrapper.eq(SysLog::getLogType, logDto.getLogType());
             }
             Page<SysLog> page = new Page<>();
             page.setSize(logDto.getSize());

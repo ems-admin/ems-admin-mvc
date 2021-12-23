@@ -37,6 +37,9 @@ public class SysLogController extends ResultUtil {
         } catch (BadRequestException e) {
             e.printStackTrace();
             return fail(false, e.getMsg());
+        } catch (Exception e){
+            e.printStackTrace();
+            return fail(false, e.getMessage());
         }
     }
 }
