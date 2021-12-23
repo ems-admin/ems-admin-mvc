@@ -16,7 +16,7 @@
         <img src="../static/image/logo.png" style="height: 40px;">
         <span>EMS-ADMIN</span>
       </div>
-      <li v-for="(menu, index) in menuList" :key="index" class="layui-nav-item">
+      <li v-for="(menu, index) in state.menuList" :key="index" class="layui-nav-item">
         <a href="javascript:" :id="menu.id" :type="menu.type">{{menu.name}}</a>
         <dl v-if="menu.children.length > 0" class="layui-nav-child layui-nav-child-c">
           <dd v-for="(child, index) in menu.children" :key="index">
@@ -32,15 +32,15 @@
       <div class="layui-col-md6" style="margin-left: 10px;">
         <!--面包屑-->
         <span class="layui-breadcrumb">
-          <span  v-for="(item, index) in breads" :key="index" >
+          <span  v-for="(item, index) in state.breads" :key="index" >
             <a href="javascript:" @click="toHome(item.id)">{{item.name}}</a>
-            <span v-if="index < breads.length - 1" lay-separator>/</span>
+            <span v-if="index < state.breads.length - 1" lay-separator>/</span>
           </span>
         </span>
       </div>
       <div class="layui-col-md6">
         <div style="float: right;margin-right: 50px;">
-          <span id="username" class="username">{{username}}</span>
+          <span id="username" class="username">{{state.username}}</span>
         </div>
       </div>
     </div>
@@ -63,142 +63,146 @@
 <script src="../static/js/vue3.js"></script>
 <script>
   const app = {
-    data(){
-      return{
+    setup(){
+      const state = Vue.reactive({
         menuList: [],
         ids: [0],
         breads: [{id: 0, name: '首页'}],
         username: sessionStorage.getItem('username'),
         element: null,
-      }
-    },
-    mounted: function () {
-      this.getHome()
-    },
-    methods: {
-      getHome(){
-        const _this = this
-        _this.$nextTick(function () {
+      })
+
+      Vue.onMounted(() => {
+        getHome()
+      })
+
+      const getHome = () => {
+        Vue.nextTick(() => {
           layui.use(['element', 'jquery'], function () {
-            _this.element = layui.element
+            state.element = layui.element
             const $ = layui.jquery
             //  添加首页
-            _this.element.tabAdd('tabs', {
+            state.element.tabAdd('tabs', {
               title: '首页',
               content: createIframe('index.html'),
               id: 0
             })
             //  切换至首页
-            _this.element.tabChange('tabs', 0)
+            state.element.tabChange('tabs', 0)
             //  隐藏首页关闭按钮
             $(".layui-tab ul").children('li').first().children('.layui-tab-close').css("display",'none');
-            _this.getMenuTree()
+            getMenuTree()
           })
         })
-      },
-      getMenuTree(){
-        const _this = this
+      }
+
+      const getMenuTree = () => {
         get('/sys/menu/tree', null).then(res => {
           if (res.success){
-            _this.menuList = res.data
-            _this.$nextTick(function () {
+            state.menuList = res.data
+            Vue.nextTick(() => {
               //  监听事件
-              _this.element.on('nav(menu)', function (elem) {
+              state.element.on('nav(menu)', function (elem) {
                 const id = elem.context.id
                 const type = elem.context.type
                 const title = elem.context.innerText
                 let url = elem.context.rel
 
                 //  新增tab
-                if (_this.ids.indexOf(id) === -1){
+                if (state.ids.indexOf(id) === -1){
                   if (type === '2'){
-                    _this.element.tabAdd('tabs', {
+                    state.element.tabAdd('tabs', {
                       title: title,
                       content: createIframe(url),
                       id: id
                     })
-                    _this.ids.push(id)
-                    _this.getTitle(id)
+                    state.ids.push(id)
+                    getTitle(id)
                   }
                 }
                 //  切换至当前tab
-                _this.element.tabChange('tabs', id)
+                state.element.tabChange('tabs', id)
                 //  切换🍞屑
-                _this.element.on('tab(tabs)', function (data) {
+                state.element.on('tab(tabs)', function (data) {
                   if (data.elem.context.attributes && data.elem.context.attributes.length > 0){
-                    _this.getTitle(data.elem.context.attributes[0].value)
+                    getTitle(data.elem.context.attributes[0].value)
                   }
                 })
               })
 
               //  删除tab
-              _this.element.on('tabDelete(tabs)', function (elem) {
+              state.element.on('tabDelete(tabs)', function (elem) {
                 const index = elem.index
-                _this.ids.splice(index, 1)
-                _this.breads.splice(1, 1)
+                state.ids.splice(index, 1)
+                state.breads.splice(1, 1)
               })
               //  重新渲染
-              _this.element.render('nav')
+              state.element.render('nav')
             })
           }
         })
-      },
-      //  通过id获取对应的上下级，以生成🍞屑层级
-      getTitle(id){
+      }
+
+      const getTitle = (id) => {
         const _this = this
-        _this.breads = []
-        _this.breads.push({
+        state.breads = []
+        state.breads.push({
           id: 0,
           name: '首页'
         })
         if (id !== 0){
-          _this.menuList.forEach((item) => {
+          state.menuList.forEach((item) => {
             if (item.children && item.children.length > 0){
               item.children.forEach((child) => {
                 if (child.id + '' === id){
-                  _this.breads.push(item)
-                  _this.breads.push(child)
+                  state.breads.push(item)
+                  state.breads.push(child)
                 }
               })
             }
           })
         }
-      },
-      toHome(id){
-        const _this = this
+      }
+
+      const toHome = (id) => {
         if (id === 0){
-          _this.element.tabChange('tabs', 0)
-          _this.getTitle(0)
+          state.element.tabChange('tabs', 0)
+          getTitle(0)
         }
+      }
+
+      const createIframe = (url) => {
+        return '<iframe src="'+url+'" class="iframe" frameborder="0" scrolling="no"></iframe>'
+      }
+
+      Vue.nextTick(() => {
+        const dropdown = layui.dropdown
+        dropdown.render({
+          elem: '#username',
+          align: 'center',
+          data: [{
+            title: '退出',
+            id: 'logout',
+          }],
+          style: 'text-align: center;',
+          click: function (obj) {
+            console.info(obj)
+            if (obj.id === 'logout'){
+              sessionStorage.setItem('token', null)
+              sessionStorage.setItem('username', null)
+              Cookies.set('token', null)
+              window.location.href = '/login.html'
+            }
+          }
+        })
+      })
+      return {
+        state,
+        toHome
       }
     }
   }
   Vue.createApp(app).mount('#app')
-
-  layui.use('dropdown', function () {
-    const dropdown = layui.dropdown
-    dropdown.render({
-      elem: '#username',
-      align: 'center',
-      data: [{
-        title: '退出',
-        id: 'logout',
-      }],
-      style: 'text-align: center;',
-      click: function (obj) {
-        console.info(obj)
-        if (obj.id === 'logout'){
-          sessionStorage.setItem('token', null)
-          sessionStorage.setItem('username', null)
-          Cookies.set('token', null)
-          window.location.href = '/login.html'
-        }
-      }
-    })
-  })
-  function createIframe(url){
-    return '<iframe src="'+url+'" class="iframe" frameborder="0" scrolling="no"></iframe>'
-  }
 </script>
 <style>
   .layui-tab{

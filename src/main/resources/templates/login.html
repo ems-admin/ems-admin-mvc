@@ -37,10 +37,9 @@
 <script src="../../static/js/common.js"></script>
 <script>
   const app = {
-    methods: {
-      login(){
-        const _this = this
-        _this.$nextTick(function () {
+    setup(){
+      const login = () => {
+        Vue.nextTick(() => {
           layui.use('form', function () {
             const form = layui.form
             form.on('submit(login)', function (data) {
@@ -58,6 +57,10 @@
             return false
           })
         })
+      }
+
+      return {
+        login
       }
     }
   }
