@@ -12,7 +12,7 @@
         <div class="layui-row" style="width: 100%;">
             <div class="layui-col-sm8">
                 <div class="search-inline">
-                    <input type="text" class="layui-input search-input" v-model="blurry" placeholder="请输入用户名/昵称">
+                    <input type="text" class="layui-input search-input" v-model="state.blurry" placeholder="请输入用户名/昵称">
                     <button type="button" class="layui-btn layui-btn-sm" @click="getUserTable">查询</button>
                 </div>
             </div>
@@ -34,29 +34,28 @@
 <script src="../../static/js/common.js"></script>
 <script>
   const app = {
-    data(){
-      return{
+    setup(){
+      const state = Vue.reactive({
         status: '',
         blurry: ''
-      }
-    },
-    mounted: function () {
-      this.getUserTable()
-    },
-    methods: {
-      getUserTable(){
-        const _this = this
-        get('/sys/user/table', {blurry: _this.blurry}).then(res => {
+      })
+
+      Vue.onMounted(() => {
+        getUserTable()
+      })
+
+      const getUserTable = () => {
+        get('/sys/user/table', {blurry: state.blurry}).then(res => {
           if (res.success){
-            _this.$nextTick(function () {
+            Vue.nextTick(() => {
               const table = layui.table
-              _this.renderTable(table, res.data)
+              renderTable(table, res.data)
             })
           }
         })
-      },
-      renderTable(table, data){
-        const _this = this
+      }
+
+      const renderTable = (table, data) => {
         table.render({
           elem: '#user',
           id: 'user_id',
@@ -85,15 +84,16 @@
 
         table.on('tool(user)', function (obj) {
           if (obj.event === 'status'){
-            _this.changeStatus(obj.data.id, !obj.data.enabled)
+            changeStatus(obj.data.id, !obj.data.enabled)
           } else if (obj.event === 'edit'){
-            _this.editUser(obj.data)
+            editUser(obj.data)
           } else if (obj.event === 'del'){
-            _this.delUser(obj.data.id)
+            delUser(obj.data.id)
           }
         })
-      },
-      editUser(data){
+      }
+
+      const editUser = (data) => {
         layer.open({
           type: 2,
           title: '编辑用户',
@@ -105,27 +105,27 @@
             iframeWin.getParentData(data)
           }
         })
-      },
-      changeStatus(id, enabled){
-        const _this = this
+      }
+
+      const changeStatus = (id, enabled) => {
         put('/sys/user/enabled', {id: id, enabled: enabled}).then(res => {
           if (res.success){
             successMsg(res.data)
-            _this.getUserTable()
+            getUserTable()
           } else {
             errorMsg(res.msg)
           }
         })
-      },
-      delUser(id){
-        const _this = this
+      }
+
+      const delUser = (id) => {
         layer.confirm('确认删除用户？',{
           btn: ['确认', '取消']
         }, function () {
           remove('/sys/user/del', {id: id}).then(res => {
             if (res.success){
               successMsg(res.data)
-              _this.getUserTable()
+              getUserTable()
             } else {
               errorMsg(res.msg)
             }
@@ -133,6 +133,11 @@
         }, function () {
           infoMsg('已取消')
         })
+      }
+      return {
+        state,
+        getUserTable,
+        editUser
       }
     }
   }

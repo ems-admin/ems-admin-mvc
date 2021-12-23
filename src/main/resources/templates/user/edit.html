@@ -46,56 +46,49 @@
 <script src="../../static/js/common.js"></script>
 <script>
   const app = {
-    data(){
-      return{
+    setup(){
+      const state = Vue.reactive({
         userId: null,
         selected: null,
         roles: []
-      }
-    },
-    mounted: function () {
+      })
 
-    },
-    methods: {
-      getRoles(){
-        const _this = this
-        get('/sys/role/select', {userId: _this.userId}).then(res => {
+      const getRoles = (userId) => {
+        get('/sys/role/select', {userId: userId}).then(res => {
           if (res.success){
-            _this.$nextTick(function () {
-              _this.selected = xmSelect.render({
+            Vue.nextTick(() => {
+              state.selected = xmSelect.render({
                 el: '#role',
                 language: 'zn',
                 data: res.data,
-                on: function (data) {
-                  _this.roles = []
-                  if (data.arr.length > 0){
-                    data.arr.forEach(obj => {
-                      _this.roles.push(obj.value)
-                    })
-                  }
-                }
               })
             })
           } else {
             errorMsg(res.msg)
           }
         })
-      },
-      save(){
-        const _this = this
-        _this.$nextTick(function () {
+      }
+
+      const save = () =>{
+        Vue.nextTick(() => {
           const form = layui.form
           form.on('submit(form)', function (data) {
-            if (_this.roles.length === 0){
+            state.roles = []
+            if (state.selected.getValue() && state.selected.getValue().length > 0){
+              state.selected.getValue().forEach((item) => {
+                state.roles.push(item.value)
+              })
+            }
+            if (state.roles.length === 0 ){
               waringMsg('请选择角色')
               return false
             }
-            data.field.roles = _this.roles
+            data.field.roles = state.roles
             post('/sys/user/edit', data.field).then(res => {
               if (res.success){
                 successMsg(res.data)
                 window.parent.getChild()
-                _this.cancel()
+                cancel()
               } else {
                 errorMsg(res.msg)
               }
@@ -103,9 +96,17 @@
             return false
           })
         })
-      },
-      cancel(){
+      }
+
+      const cancel = () => {
         parent.layer.closeAll()
+      }
+
+      return {
+        state,
+        save,
+        cancel,
+        getRoles
       }
     }
   }
@@ -113,11 +114,12 @@
 
   function getParentData(data){
     if (data && data.id){
-      vue.userId = data.id
+      vue.getRoles(data.id)
       const form = layui.form
       form.val('form', data)
+    } else {
+      vue.getRoles()
     }
-    vue.getRoles()
   }
 </script>
 </html>
