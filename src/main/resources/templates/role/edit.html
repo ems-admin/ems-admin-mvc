@@ -19,7 +19,7 @@
     <div class="layui-form-item">
       <div class="layui-form-label">角色代码</div>
       <div class="layui-inline">
-        <input class="layui-input layui-input-form" lay-verify="required" name="roleCode" placeholder="请输入角色代码" :disabled="isAdmin">
+        <input class="layui-input layui-input-form" lay-verify="required" name="roleCode" placeholder="请输入角色代码" :disabled="state.isAdmin">
       </div>
     </div>
     <div class="layui-form-item">
@@ -45,25 +45,20 @@
 <script src="../../static/js/common.js"></script>
 <script>
   const app = {
-    data(){
-      return{
+    setup(){
+      const state = Vue.reactive({
         isAdmin: false
-      }
-    },
-    mounted: function () {
+      })
 
-    },
-    methods: {
-      save(){
-        const _this = this
-        _this.$nextTick(function () {
+      const save = () => {
+        Vue.nextTick(() => {
           const form = layui.form
           form.on('submit(form)', function (data) {
             post('/sys/role/edit', data.field).then(res => {
               if (res.success){
                 successMsg(res.data)
                 window.parent.getChild()
-                _this.cancel()
+                cancel()
               } else {
                 errorMsg(res.msg)
               }
@@ -71,9 +66,16 @@
             return false
           })
         })
-      },
-      cancel(){
+      }
+
+      const cancel = () => {
         parent.layer.closeAll()
+      }
+
+      return {
+        state,
+        save,
+        cancel
       }
     }
   }
@@ -81,9 +83,9 @@
 
   //  获取父页面的传值
   function getParentData(data) {
-    vue.isAdmin = false
+    vue.state.isAdmin = false
     if (data && data.id){
-      vue.isAdmin = data.roleCode === 'ROLE_ADMIN'
+      vue.state.isAdmin = data.roleCode === 'ROLE_ADMIN'
       const form = layui.form
       form.val('form', data)
     }

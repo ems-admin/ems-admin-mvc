@@ -23,29 +23,25 @@
 <script src="../../static/js/common.js"></script>
 <script>
   const app = {
-    data(){
-      return{
+    setup(){
+      const state = Vue.reactive({
         roleId: '',
         menuIds: []
-      }
-    },
-    mounted: function () {
+      })
 
-    },
-    methods: {
-      getMenuTree() {
-        const _this = this
-        get('/sys/menu/role/tree', {roleId: _this.roleId}).then(res => {
+      const getMenuTree = () => {
+        get('/sys/menu/role/tree', {roleId: state.roleId}).then(res => {
           if (res.success){
-            _this.$nextTick(function () {
+            Vue.nextTick(() => {
               const tree = layui.tree
-              _this.renderTree(tree, res.data)
+              renderTree(tree, res.data)
             })
           }
         })
 
-      },
-      renderTree(tree, data){
+      }
+
+      const renderTree = (tree, data) => {
         tree.render({
           elem: '#tree',
           id: 'tree_id',
@@ -53,51 +49,55 @@
           showCheckbox: true,
           accordion: true
         })
-      },
-      authorize(){
-        const _this = this
-        _this.$nextTick(function () {
+      }
+
+      const authorize = () => {
+        Vue.nextTick(() => {
           const tree = layui.tree
           //获得选中的节点
           const checkData = tree.getChecked('tree_id')
-          console.info(checkData)
-          _this.menuIds = []
-          _this.menuIds = _this.getChildNodes(checkData, _this.menuIds)
-          post('/sys/role/menu/edit', {roleId: _this.roleId, menuIds: _this.menuIds}).then(res => {
+          state.menuIds = []
+          state.menuIds = getChildNodes(checkData, state.menuIds)
+          post('/sys/role/menu/edit', {roleId: state.roleId, menuIds: state.menuIds}).then(res => {
             if (res.success){
-              _this.cancel()
-              _this.getMenuTree()
+              cancel()
+              getMenuTree()
               successMsg(res.data)
             } else {
               errorMsg(res.msg)
             }
           })
         })
-        successMsg('授权成功')
-      },
+      }
+
       //  只获取最下级子节点，防止获取上级目录，渲染的时候会将该上级目录的所有下级目录勾选
-      getChildNodes(treeNode, result){
-        const _this = this
+      const getChildNodes = (treeNode, result) => {
         for (const i in treeNode) {
           if (treeNode[i].children && treeNode[i].children.length === 0){
             result.push(treeNode[i].id)
           } else {
-            _this.getChildNodes(treeNode[i].children, result)
+            getChildNodes(treeNode[i].children, result)
           }
-          // result.push(treeNode[i].id)
-          // result = _this.getChildNodes(treeNode[i].children, result)
         }
         return result
-      },
-      cancel(){
+      }
+
+      const cancel = () => {
         window.parent.layer.closeAll()
+      }
+
+      return {
+        state,
+        getMenuTree,
+        authorize,
+        cancel
       }
     }
   }
   const vue = Vue.createApp(app).mount('#app')
 
   function getParentData(roleId){
-      vue.roleId = roleId
+      vue.state.roleId = roleId
       vue.getMenuTree()
   }
 </script>

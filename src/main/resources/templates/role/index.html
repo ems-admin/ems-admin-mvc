@@ -12,7 +12,7 @@
         <div class="layui-row" style="width: 100%;">
             <div class="layui-col-sm8">
                 <div class="search-inline">
-                    <input type="text" class="layui-input search-input" v-model="blurry" placeholder="请输入角色名称/代码/描述">
+                    <input type="text" class="layui-input search-input" v-model="state.blurry" placeholder="请输入角色名称/代码/描述">
                     <button type="button" class="layui-btn layui-btn-sm" @click="getRoleList">查询</button>
                 </div>
             </div>
@@ -34,108 +34,115 @@
 <script src="../../static/js/common.js"></script>
 <script>
   const app = {
-    data(){
-        return{
-            blurry: ''
-        }
-    },
-    mounted: function () {
-        this.getRoleList()
-    },
-    methods: {
-        getRoleList(){
-            const _this = this
-            get('/sys/role/table', {blurry: _this.blurry}).then(res => {
-                if (res.success){
-                    _this.$nextTick(function () {
-                        const table = layui.table
-                        _this.renderTable(table, res.data)
-                    })
-                }
-            })
-        },
-        renderTable(table, data){
-            const _this = this
-            table.render({
-                elem: '#role',
-                id: 'role_id',
-                height: 'full-70',
-                page: true,
-                cols:[[
-                    { type: 'numbers', title: '序号', width: 50},
-                    { field: 'roleName', title: '角色名称'},
-                    { field: 'roleCode', title: '角色代码'},
-                    { field: 'description', title: '描述'},
-                    { field: 'option', title: '操作', width: 200, align: 'center', templet: function (data) {
-                            return '<a class="layui-btn layui-btn-xs layui-btn-normal" lay-event="authorize">授权</a>' +
-                                '<a class="layui-btn layui-btn-xs" lay-event="edit">修改</a>' +
-                                '<a class="layui-btn layui-btn-xs layui-btn-danger" lay-event="del">删除</a>'
-                        } },
-                ]],
-                data: data ? data : []
-            })
+    setup(){
+      const state = Vue.reactive({
+        blurry: ''
+      })
 
-            table.on('tool(role)', function (obj) {
-                if (obj.event === 'edit'){
-                    _this.editRole(obj.data)
-                } else if (obj.event === 'del'){
-                    _this.delRole(obj.data.id)
-                } else if (obj.event === 'authorize'){
-                    _this.authorize(obj.data.id, obj.data.roleCode)
-                }
+      Vue.onMounted(() => {
+        getRoleList()
+      })
+
+      const getRoleList = () => {
+        get('/sys/role/table', {blurry: state.blurry}).then(res => {
+          if (res.success){
+            Vue.nextTick(() => {
+              const table = layui.table
+              renderTable(table, res.data)
             })
-        },
-        editRole(data) {
-            layer.open({
-                type: 2,
-                title: '编辑菜单',
-                area: ['800px', '400px'],
-                content: 'edit.html',
-                success: function (layero, index) {
-                  const iframeWin = window[layero.find('iframe')[0]['name']]
-                  //  将data传到子页面
-                  iframeWin.getParentData(data)
-                }
-            })
-        },
-        delRole(id){
-            const _this = this
-            layer.confirm('确认删除角色？', {
-                btn: ['确认', '取消']
-            }, function () {
-                remove('/sys/role/del', {id: id}).then(res => {
-                    if (res.success){
-                        successMsg(res.data)
-                        _this.getRoleList()
-                    } else {
-                        errorMsg(res.msg)
-                    }
-                })
-            }, function () {
-                infoMsg('操作已取消')
-            })
-        },
-        authorize(id, roleCode){
-          if (roleCode === 'ROLE_ADMIN'){
-            waringMsg('超级管理员拥有所有菜单权限，无需授权！')
-            return false
           }
-            layer.open({
-                type: 2,
-                title: '角色授权',
-                area: ['800px', '400px'],
-                content: 'authorize.html',
-                success: function (layero, index) {
-                    const iframeWin = window[layero.find('iframe')[0]['name']]
-                    //  将data传到子页面
-                    iframeWin.getParentData(id)
-                }
-            })
+        })
+      }
+
+      const renderTable = (table, data) => {
+        table.render({
+          elem: '#role',
+          id: 'role_id',
+          height: 'full-70',
+          page: true,
+          cols:[[
+            { type: 'numbers', title: '序号', width: 50},
+            { field: 'roleName', title: '角色名称'},
+            { field: 'roleCode', title: '角色代码'},
+            { field: 'description', title: '描述'},
+            { field: 'option', title: '操作', width: 200, align: 'center', templet: function (data) {
+                return '<a class="layui-btn layui-btn-xs layui-btn-normal" lay-event="authorize">授权</a>' +
+                    '<a class="layui-btn layui-btn-xs" lay-event="edit">修改</a>' +
+                    '<a class="layui-btn layui-btn-xs layui-btn-danger" lay-event="del">删除</a>'
+              } },
+          ]],
+          data: data ? data : []
+        })
+
+        table.on('tool(role)', function (obj) {
+          if (obj.event === 'edit'){
+            editRole(obj.data)
+          } else if (obj.event === 'del'){
+            delRole(obj.data.id)
+          } else if (obj.event === 'authorize'){
+            authorize(obj.data.id, obj.data.roleCode)
+          }
+        })
+      }
+
+      const editRole = (data) => {
+        layer.open({
+          type: 2,
+          title: '编辑菜单',
+          area: ['800px', '400px'],
+          content: 'edit.html',
+          success: function (layero, index) {
+            const iframeWin = window[layero.find('iframe')[0]['name']]
+            //  将data传到子页面
+            iframeWin.getParentData(data)
+          }
+        })
+      }
+
+      const delRole = (id) => {
+        layer.confirm('确认删除角色？', {
+          btn: ['确认', '取消']
+        }, function () {
+          remove('/sys/role/del', {id: id}).then(res => {
+            if (res.success){
+              successMsg(res.data)
+              getRoleList()
+            } else {
+              errorMsg(res.msg)
+            }
+          })
+        }, function () {
+          infoMsg('操作已取消')
+        })
+      }
+
+      const authorize = (id, roleCode) => {
+        if (roleCode === 'ROLE_ADMIN'){
+          waringMsg('超级管理员拥有所有菜单权限，无需授权！')
+          return false
         }
+        layer.open({
+          type: 2,
+          title: '角色授权',
+          area: ['800px', '400px'],
+          content: 'authorize.html',
+          success: function (layero, index) {
+            const iframeWin = window[layero.find('iframe')[0]['name']]
+            //  将data传到子页面
+            iframeWin.getParentData(id)
+          }
+        })
+      }
+
+      return {
+        state,
+        getRoleList,
+        editRole,
+        delRole
+      }
     }
   }
   const vue = Vue.createApp(app).mount('#app')
-
   function getChild(){
     vue.getRoleList()
   }
