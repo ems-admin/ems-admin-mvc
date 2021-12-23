@@ -15,7 +15,7 @@
         <div class="layui-form-item">
           <div class="layui-form-label">上级目录</div>
           <div class="layui-inline">
-            <input v-model="parentId" type="text" id="tree" name="parentId" lay-verify="required" lay-filter="tree" placeholder="请选择上级目录" class="layui-input layui-input-form">
+            <input v-model="state.parentId" type="text" id="tree" name="parentId" lay-verify="required" lay-filter="tree" placeholder="请选择上级目录" class="layui-input layui-input-form">
           </div>
         </div>
       </div>
@@ -42,7 +42,7 @@
         <input class="layui-input layui-input-form" lay-verify="required" name="name" placeholder="请输入菜单名称">
       </div>
     </div>
-    <div v-if="isPage" class="layui-form-item">
+    <div v-if="state.isPage" class="layui-form-item">
       <div class="layui-form-label">菜单路径</div>
       <div class="layui-inline">
         <input class="layui-input layui-input-form" lay-verify="required" name="path" placeholder="请输入菜单路径">
@@ -59,41 +59,35 @@
 </body>
 <script src="../../static/layui-v2.6.8/layui/layui.js"></script>
 <script src="../../static/js/axios.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
 <script src="../../static/js/http.js"></script>
 <script src="../../static/js/vue3.js"></script>
 <script src="../../static/js/common.js"></script>
 <script>
   const app = {
-    data(){
-      return{
+    setup(){
+      const state = Vue.reactive({
         parentId: '',
         isPage: false
-      }
-    },
-    mounted: function () {
+      })
 
-    },
-    methods: {
-      getParentTree(parentId) {
-        const _this = this
+      const getParentTree = (parentId) => {
         get('/sys/menu/select/tree', null).then(res => {
           if (res.success){
-            _this.$nextTick(function () {
+            Vue.nextTick(() => {
               layui.config({
                 base: '../../static/js/'
               }).use('treeSelect', function () {
                 const treeSelect = layui.treeSelect
-                _this.renderParentTree(treeSelect, res.data, parentId)
+                renderParentTree(treeSelect, res.data, parentId)
               })
             })
           } else {
             errorMsg(res.msg)
           }
         })
-      },
-      renderParentTree(treeSelect, data, parentId){
-        const _this = this
+      }
+
+      const renderParentTree = (treeSelect, data, parentId) => {
         treeSelect.render({
           elem: '#tree',
           data: data,
@@ -107,26 +101,26 @@
           },
           search: true,
           click: function(obj){
-            _this.parentId = obj.current.id
+            state.parentId = obj.current.id
           },
           success: function (data) {
             //  默认为0，即顶级目录
             parentId = parentId ? parentId : 0
-            _this.parentId = parentId
+            state.parentId = parentId
             treeSelect.checkNode('tree', parentId)
           }
         })
-      },
-      save(){
-        const _this = this
-        _this.$nextTick(function () {
+      }
+
+      const save = () => {
+        Vue.nextTick(() => {
           const form = layui.form
           form.on('submit(form)', function (data) {
             post('/sys/menu/edit', data.field).then(res => {
               if (res.success){
                 successMsg(res.data)
                 window.parent.getChild()
-                _this.cancel()
+                cancel()
               } else {
                 errorMsg(res.msg)
               }
@@ -134,27 +128,34 @@
             return false
           })
         })
-      },
-      cancel(){
+      }
+      const cancel = () => {
         parent.layer.closeAll()
+      }
+
+      Vue.nextTick(() => {
+        const form = layui.form
+        form.on('radio(type)', function (data) {
+          state.isPage = data.value === '2' || state.value === '3';
+        })
+      })
+
+      return {
+        state,
+        getParentTree,
+        save,
+        cancel
       }
     }
   }
   const vue = Vue.createApp(app).mount('#app')
-
-  layui.use('form', function () {
-    const form = layui.form
-    form.on('radio(type)', function (data) {
-      vue.isPage = data.value === '2' || data.value === '3';
-    })
-  })
 
   //  获取父页面的传值
   function getParentData(data) {
     if (data && data.id){
       const form = layui.form
       if (data.type === '2' || data.type === '3'){
-        vue.isPage = true
+        vue.state.isPage = true
       }
       setTimeout(function () {
         form.val('form', data)

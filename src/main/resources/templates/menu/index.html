@@ -12,7 +12,7 @@
     <div class="layui-row" style="width: 100%;">
       <div class="layui-col-sm8">
         <div class="search-inline">
-          <input type="text" class="layui-input search-input" v-model="blurry" placeholder="请输入菜单名称">
+          <input type="text" class="layui-input search-input" v-model="state.blurry" placeholder="请输入菜单名称">
           <button type="button" class="layui-btn layui-btn-sm" @click="getTableTree">查询</button>
         </div>
       </div>
@@ -28,39 +28,36 @@
 </body>
 <script src="../../static/layui-v2.6.8/layui/layui.js"></script>
 <script src="../../static/js/axios.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
 <script src="../../static/js/http.js"></script>
 <script src="../../static/js/vue3.js"></script>
 <script src="../../static/js/common.js"></script>
 <script>
   const app = {
-    data(){
-      return{
-        menuName: '',
+    setup(){
+      const state = Vue.reactive({
         blurry: ''
-      }
-    },
-    mounted: function () {
-      this.getTableTree()
-    },
-    methods: {
-      getTableTree(){
-        const _this = this
-        get('/sys/menu/table/tree', {blurry: _this.blurry}).then(res => {
+      })
+
+      Vue.onMounted(() => {
+        getTableTree()
+      })
+
+      const getTableTree = () =>{
+        get('/sys/menu/table/tree', {blurry: state.blurry}).then(res => {
           if (res.success){
-            _this.$nextTick(function () {
+            Vue.nextTick(() => {
               layui.config({
                 base: '../../static/js/'
               }).use(['treeTable','jquery', 'table'], function () {
                 const treeTable = layui.treeTable
-                _this.renderTable(treeTable, res.data)
+                renderTable(treeTable, res.data)
               })
             })
           }
         })
-      },
-      renderTable(treeTable, data){
-        const _this = this
+      }
+
+      const renderTable = (treeTable, data) =>{
         treeTable.render({
           elem: '#menu',
           height: 'full-70',
@@ -95,13 +92,14 @@
 
         treeTable.on('tool(menu)', function (obj) {
           if (obj.event === 'edit'){
-            _this.editMenu(obj.data)
+            editMenu(obj.data)
           } else if (obj.event === 'del'){
-            _this.delMenu(obj.data.id)
+            delMenu(obj.data.id)
           }
         })
-      },
-      editMenu(data){
+      }
+
+      const editMenu = (data) =>{
         layer.open({
           type: 2,
           title: '编辑菜单',
@@ -113,16 +111,16 @@
             iframeWin.getParentData(data)
           }
         })
-      },
-      delMenu(id){
-        const _this = this
+      }
+
+      const delMenu = (id) =>{
         layer.confirm('确认删除菜单？', {
           btn: ['确认', '取消']
         }, function () {
           remove('/sys/menu/del', {id: id}).then(res => {
             if (res.success){
               successMsg(res.data)
-              _this.getTableTree()
+              getTableTree()
             } else {
               errorMsg(res.msg)
             }
@@ -130,6 +128,13 @@
         }, function () {
           infoMsg('操作已取消')
         })
+      }
+
+      return {
+        state,
+        getTableTree,
+        editMenu,
+        delMenu
       }
     }
   }
