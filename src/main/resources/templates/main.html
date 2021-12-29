@@ -17,7 +17,7 @@
         <span>EMS-ADMIN</span>
       </div>
       <li v-for="(menu, index) in state.menuList" :key="index" class="layui-nav-item">
-        <a href="javascript:" :id="menu.id" :type="menu.type">{{menu.name}}</a>
+        <a href="javascript:" :id="menu.id" :type="menu.type" :class="index === 0 ? 'layui-this' : ''">{{menu.name}}</a>
         <dl v-if="menu.children.length > 0" class="layui-nav-child layui-nav-child-c">
           <dd v-for="(child, index) in menu.children" :key="index">
             <a href="javascript:" :id="child.id" :type="child.type" :rel="child.path">{{child.name}}</a>
@@ -66,32 +66,37 @@
     setup(){
       const state = Vue.reactive({
         menuList: [],
-        ids: [0],
-        breads: [{id: 0, name: '首页'}],
+        ids: [],
+        breads: [],
         username: sessionStorage.getItem('username'),
         element: null,
       })
 
       Vue.onMounted(() => {
-        getHome()
+        // getHome()
+        getMenuTree()
       })
 
-      const getHome = () => {
+      const getHome = (menu) => {
+        console.info(menu)
         Vue.nextTick(() => {
           layui.use(['element', 'jquery'], function () {
             state.element = layui.element
             const $ = layui.jquery
             //  添加首页
             state.element.tabAdd('tabs', {
-              title: '首页',
-              content: createIframe('index.html'),
-              id: 0
+              title: menu.title,
+              content: createIframe(menu.path),
+              id: menu.id
             })
+            //  添加id到已打开的id列表中
+            state.ids.push(menu.id.toString())
+            //  将首页添加到🍞屑中
+            state.breads.push({id: menu.id, name: menu.name})
             //  切换至首页
-            state.element.tabChange('tabs', 0)
+            state.element.tabChange('tabs', menu.id)
             //  隐藏首页关闭按钮
             $(".layui-tab ul").children('li').first().children('.layui-tab-close').css("display",'none');
-            getMenuTree()
           })
         })
       }
@@ -100,6 +105,7 @@
         get('/sys/menu/tree', null).then(res => {
           if (res.success){
             state.menuList = res.data
+            getHome(state.menuList[0])
             Vue.nextTick(() => {
               //  监听事件
               state.element.on('nav(menu)', function (elem) {

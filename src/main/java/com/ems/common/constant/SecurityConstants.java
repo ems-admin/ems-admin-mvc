@@ -19,6 +19,11 @@ public class SecurityConstants {
     public static final String HTML_LOGIN_URL = "/login.html";
 
     /**
+     * 401
+     */
+    public static final String HTML_401 = "/error/401.html";
+
+    /**
      * JWT签名密钥，用的512-bit Encryption key
      * 地址 https://www.allkeysgenerator.com/
      */

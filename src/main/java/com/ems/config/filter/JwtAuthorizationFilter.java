@@ -3,15 +3,21 @@ package com.ems.config.filter;
 import com.ems.common.constant.SecurityConstants;
 import com.ems.common.exception.BadRequestException;
 import com.ems.common.utils.JwtUtil;
+import com.ems.common.utils.RedisUtil;
 import com.ems.common.utils.SecurityUtil;
 import com.ems.common.utils.StringUtil;
+import com.ems.config.config.RedisConfig;
+import com.ems.system.entity.SysMenu;
 import com.ems.system.service.SysMenuService;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+import org.springframework.util.CollectionUtils;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -19,7 +25,8 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @program: ems-admin-mvc
@@ -31,9 +38,12 @@ public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
 
     private final SysMenuService menuService;
 
-    public JwtAuthorizationFilter(AuthenticationManager authenticationManager, SysMenuService sysMenuService) {
+    private final RedisUtil redisUtil;
+
+    public JwtAuthorizationFilter(AuthenticationManager authenticationManager, SysMenuService sysMenuService, RedisUtil redisUtil) {
         super(authenticationManager);
         this.menuService = sysMenuService;
+        this.redisUtil = redisUtil;
     }
 
     /**
@@ -55,13 +65,9 @@ public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
                 Authentication authentication = JwtUtil.getAuthentication(token);
                 //  将认证信息保存在spring安全上下文中
                 SecurityContextHolder.getContext().setAuthentication(authentication);
-                //  获取当前用户的菜单权限
-//                List<String> menuList = menuService.getMenuUrlByRole(SecurityUtil.getCurrentRoles());
-                //  将主页菜单添加进来,因为主页不在授权页面中
-//                menuList.add("/main.html");
-//                menuList.add("/index.html");
-//                if (!menuList.contains(request.getRequestURI()) && request.getRequestURI().endsWith(".html")){
-//                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "没有访问权限");
+                //  判断请求路径是否有效
+//                if (!checkURI(request.getRequestURI())){
+//                    throw new BadRequestException("没有访问权限");
 //                }
                 //  放行请求
                 filterChain.doFilter(request, response);
@@ -69,8 +75,8 @@ public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
                 response.sendRedirect(SecurityConstants.HTML_LOGIN_URL);
             }
         } catch (BadRequestException e) {
-            //  token问题,统一跳转到登录页面重新登录
-            response.sendRedirect(SecurityConstants.HTML_LOGIN_URL);
+            //  token问题,统一跳转到401页面
+            response.sendRedirect(SecurityConstants.HTML_401);
         }
     }
 
@@ -98,5 +104,45 @@ public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
             }
         }
         return null;
+    }
+
+    /**
+    * @Description: 校验请求路径是否可用
+    * @Param: [url]
+    * @return: boolean
+    * @Author: starao
+    * @Date: 2021/12/28
+    */
+    private boolean checkURI(String url){
+        try {
+            boolean b = false;
+            List<String> menuList = new ArrayList<>();
+            //  从redis中获取该用户的所有菜单权限
+            Object object = redisUtil.getValue("menu");
+            //  如果不存在就重新获取
+            if (object == null){
+                menuList = menuService.getMenuUrlByRole(SecurityUtil.getCurrentRoles());
+                //  添加通过的无法添加权限的两个页面
+                menuList.add("/main.html");
+                menuList.add("/index.html");
+                //   并将得到的菜单列表保存进redis中
+                if (!CollectionUtils.isEmpty(menuList)){
+                    redisUtil.setValue("menu", menuList.toString(), 7200L, TimeUnit.SECONDS);
+                } else {
+                    return false;
+                }
+            } else {
+                menuList = Collections.singletonList(Objects.requireNonNull(redisUtil.getValue("menu")).toString());
+            }
+
+            if (menuList.contains(url)){
+                b = true;
+            }
+
+            return b;
+        } catch (BadRequestException e) {
+            e.printStackTrace();
+            throw new BadRequestException(e.getMsg());
+        }
     }
 }

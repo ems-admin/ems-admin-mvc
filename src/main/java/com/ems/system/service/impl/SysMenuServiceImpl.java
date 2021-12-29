@@ -45,9 +45,11 @@ public class SysMenuServiceImpl implements SysMenuService {
     public JSONArray getMenuTree(List<String> roles) {
         try {
             List<SysMenu> menuListAll;
+            LambdaQueryWrapper<SysMenu> wrapper = new LambdaQueryWrapper<>();
+            wrapper.orderByAsc(SysMenu::getSort);
             //  如果角色中包含admin,则直接查询所有菜单
             if (roles.contains(CommonConstants.ROLE_ADMIN)){
-                menuListAll = menuMapper.selectList(null);
+                menuListAll = menuMapper.selectList(wrapper);
             } else {
                 menuListAll = menuMapper.getMenuTree(roles);
                 if (!CollectionUtils.isEmpty(menuListAll)){

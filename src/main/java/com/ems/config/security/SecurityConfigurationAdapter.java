@@ -1,6 +1,7 @@
 package com.ems.config.security;
 
 import com.ems.common.constant.SecurityConstants;
+import com.ems.common.utils.RedisUtil;
 import com.ems.config.filter.JwtAuthorizationFilter;
 import com.ems.system.service.SysMenuService;
 import lombok.RequiredArgsConstructor;
@@ -41,6 +42,8 @@ public class SecurityConfigurationAdapter extends WebSecurityConfigurerAdapter {
 
     private final SysMenuService sysMenuService;
 
+    private final RedisUtil redisUtil;
+
     /**
     * @Description: 配置SpringSecurity推荐的加密方式
     * @Param: []
@@ -64,6 +67,7 @@ public class SecurityConfigurationAdapter extends WebSecurityConfigurerAdapter {
     public void configure(WebSecurity webSecurity){
         webSecurity.ignoring()
                 .antMatchers(HttpMethod.GET, "/login.html")
+                .antMatchers(HttpMethod.GET, "/error/401.html")
                 .antMatchers(HttpMethod.POST,SecurityConstants.AUTH_LOGIN_URL, "/auth/register")
                 .antMatchers("/static/**")
                 .antMatchers("/static/js/**");
@@ -110,6 +114,6 @@ public class SecurityConfigurationAdapter extends WebSecurityConfigurerAdapter {
     * @Date: 2021/11/28
     */
     private JwtConfigurerAdapter securityConfigurationAdapter() throws Exception {
-        return new JwtConfigurerAdapter(new JwtAuthorizationFilter(authenticationManager(), sysMenuService));
+        return new JwtConfigurerAdapter(new JwtAuthorizationFilter(authenticationManager(), sysMenuService, redisUtil));
     }
 }

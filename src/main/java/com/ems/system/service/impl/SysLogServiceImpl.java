@@ -101,7 +101,6 @@ public class SysLogServiceImpl implements SysLogService {
      * @Date: 2021/11/28
      */
     @Override
-    @PreAuthorize("hasRole('ROLE_ADMIN') OR hasRole('ROLE_USER')")
     public IPage<SysLog> getLogList(LogDto logDto) {
         try {
             LambdaQueryWrapper<SysLog> wrapper = new LambdaQueryWrapper<>();
