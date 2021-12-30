@@ -48,6 +48,12 @@
         <input class="layui-input layui-input-form" lay-verify="required" name="path" placeholder="请输入菜单路径">
       </div>
     </div>
+    <div v-if="state.isButton" class="layui-form-item">
+      <div class="layui-form-label">权限标识</div>
+      <div class="layui-inline">
+        <input class="layui-input layui-input-form" lay-verify="required" name="permission" placeholder="请输入权限标识">
+      </div>
+    </div>
     <div class="layui-form-item btn-div">
       <div class="layui-inline">
         <button type="button" class="layui-btn layui-btn-sm layui-btn-primary btn-save" @click="cancel">取消</button>
@@ -67,7 +73,8 @@
     setup(){
       const state = Vue.reactive({
         parentId: '',
-        isPage: false
+        isPage: false,
+        isButton: false
       })
 
       const getParentTree = (parentId) => {
@@ -136,7 +143,8 @@
       Vue.nextTick(() => {
         const form = layui.form
         form.on('radio(type)', function (data) {
-          state.isPage = data.value === '2' || state.value === '3';
+          state.isPage = data.value === '2' || data.value === '3';
+          state.isButton = data.value === '3'
         })
       })
 
@@ -156,6 +164,9 @@
       const form = layui.form
       if (data.type === '2' || data.type === '3'){
         vue.state.isPage = true
+      }
+      if (data.type === '3'){
+        vue.state.isButton = true
       }
       setTimeout(function () {
         form.val('form', data)

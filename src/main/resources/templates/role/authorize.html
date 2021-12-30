@@ -8,7 +8,7 @@
 </head>
 <body class="body" style="padding-top: 30px;padding-left: 50px;padding-right: 50px;">
 <div id="app">
-    <div id="tree" style="height: 260px;"></div>
+    <div id="tree" class="tree" style="height: 260px;"></div>
     <div class="btn-div">
         <button class="layui-btn layui-btn-sm layui-btn-primary btn-save" @click="cancel">取消</button>
         <button class="layui-btn layui-btn-sm layui-btn-normal btn-save" @click="authorize">授权</button>
@@ -29,26 +29,49 @@
         menuIds: []
       })
 
+      //    获取所有菜单
       const getMenuTree = () => {
         get('/sys/menu/role/tree', {roleId: state.roleId}).then(res => {
           if (res.success){
+            // Vue.nextTick(() => {
+            //   const tree = layui.tree
+            //   renderTree(tree, res.data)
+            // })
             Vue.nextTick(() => {
-              const tree = layui.tree
-              renderTree(tree, res.data)
+              layui.config({
+                base: '../../static/js/'
+              }).use('eleTree', function () {
+                const eleTree = layui.eleTree
+                renderTree(eleTree, res.data)
+              })
             })
           }
         })
 
       }
 
-      const renderTree = (tree, data) => {
-        tree.render({
-          elem: '#tree',
-          id: 'tree_id',
+      const renderTree = (eleTree, data) => {
+        const el = eleTree({
+          el: '.tree',
           data: data,
           showCheckbox: true,
-          accordion: true
+          isDefaultChangePstatus: true,
+          sort: true,
+          initSort: {
+            field: 'sort',
+            type: 'asc'
+          }
         })
+        // eletree.render({
+        //   elem: '#tree',
+        //   id: 'tree_id',
+        //   data: data,
+        //   showCheckbox: true,
+        //   accordion: true
+        // })
+        //
+        // tree.setChecked('tree_id', 2)
+        // tree.reload('tree')
       }
 
       const authorize = () => {
@@ -70,14 +93,18 @@
         })
       }
 
-      //  只获取最下级子节点，防止获取上级目录，渲染的时候会将该上级目录的所有下级目录勾选
+      //  获取所有选中的节点ID
       const getChildNodes = (treeNode, result) => {
         for (const i in treeNode) {
-          if (treeNode[i].children && treeNode[i].children.length === 0){
             result.push(treeNode[i].id)
-          } else {
+          if (treeNode[i].children && treeNode[i].children.length > 0){
             getChildNodes(treeNode[i].children, result)
           }
+          // if (treeNode[i].children && treeNode[i].children.length === 0){
+          //   result.push(treeNode[i].id)
+          // } else {
+          //   getChildNodes(treeNode[i].children, result)
+          // }
         }
         return result
       }

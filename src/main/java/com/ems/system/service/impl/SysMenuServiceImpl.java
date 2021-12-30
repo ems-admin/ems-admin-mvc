@@ -45,10 +45,12 @@ public class SysMenuServiceImpl implements SysMenuService {
     public JSONArray getMenuTree(List<String> roles) {
         try {
             List<SysMenu> menuListAll;
-            LambdaQueryWrapper<SysMenu> wrapper = new LambdaQueryWrapper<>();
-            wrapper.orderByAsc(SysMenu::getSort);
             //  如果角色中包含admin,则直接查询所有菜单
             if (roles.contains(CommonConstants.ROLE_ADMIN)){
+                LambdaQueryWrapper<SysMenu> wrapper = new LambdaQueryWrapper<>();
+                //  左侧菜单树不展示按钮类型
+                wrapper.ne(SysMenu::getType, "3");
+                wrapper.orderByAsc(SysMenu::getSort);
                 menuListAll = menuMapper.selectList(wrapper);
             } else {
                 menuListAll = menuMapper.getMenuTree(roles);
@@ -57,9 +59,10 @@ public class SysMenuServiceImpl implements SysMenuService {
                     for (SysMenu sysMenu : menuListAll) {
                         menuSet.addAll(getAllMenusByChildId(sysMenu.getId()));
                     }
-                    menuListAll = new ArrayList<>(menuSet).stream().sorted(Comparator.comparing(SysMenu::getId)).collect(Collectors.toList());
+                    menuListAll = new ArrayList<>(menuSet).stream().sorted(Comparator.comparing(SysMenu::getSort)).collect(Collectors.toList());
                 }
             }
+            menuListAll = menuListAll.stream().filter((item) -> !item.getType().equals("3")).collect(Collectors.toList());
             return getObjects(menuListAll, 0l, "title", null);
         } catch (BadRequestException e) {
             e.printStackTrace();
@@ -82,6 +85,7 @@ public class SysMenuServiceImpl implements SysMenuService {
             if (StringUtils.isNotBlank(blurry)){
                 wrapper.like(SysMenu::getName, blurry);
             }
+            wrapper.orderByAsc(SysMenu::getSort);
             return menuMapper.selectList(wrapper);
         } catch (BadRequestException e) {
             e.printStackTrace();
@@ -227,7 +231,9 @@ public class SysMenuServiceImpl implements SysMenuService {
     public List<String> getMenuUrlByRole(List<String> roles) {
         try {
             if (roles.contains(CommonConstants.ROLE_ADMIN)){
-                List<SysMenu> menuList = menuMapper.selectList(null);
+                LambdaQueryWrapper<SysMenu> wrapper = new LambdaQueryWrapper<>();
+                wrapper.isNotNull(SysMenu::getPath);
+                List<SysMenu> menuList = menuMapper.selectList(wrapper);
                 List<String> urls = new ArrayList<>();
                 for (SysMenu menu : menuList) {
                     urls.add(menu.getPath());
@@ -278,8 +284,9 @@ public class SysMenuServiceImpl implements SysMenuService {
                 if ("title".equals(title)){
                     jsonObject.put("parentId", menu.getParentId());
                     jsonObject.put("path", menu.getPath());
-                    jsonObject.put("name", menu.getName());
+                    jsonObject.put("label", menu.getName());
                     jsonObject.put("type", menu.getType());
+                    jsonObject.put("sort", menu.getSort());
                     if (!CollectionUtils.isEmpty(menuIds) && menuIds.contains(menu.getId())){
                         jsonObject.put("checked", true);
                     }

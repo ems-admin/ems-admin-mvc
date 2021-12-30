@@ -17,10 +17,10 @@
         <span>EMS-ADMIN</span>
       </div>
       <li v-for="(menu, index) in state.menuList" :key="index" class="layui-nav-item">
-        <a href="javascript:" :id="menu.id" :type="menu.type" :class="index === 0 ? 'layui-this' : ''">{{menu.name}}</a>
+        <a href="javascript:" :id="menu.id" :type="menu.type" :class="index === 0 ? 'layui-this' : ''">{{menu.label}}</a>
         <dl v-if="menu.children.length > 0" class="layui-nav-child layui-nav-child-c">
           <dd v-for="(child, index) in menu.children" :key="index">
-            <a href="javascript:" :id="child.id" :type="child.type" :rel="child.path">{{child.name}}</a>
+            <a v-if="child.type !== '3'" href="javascript:" :id="child.id" :type="child.type" :rel="child.path">{{child.label}}</a>
           </dd>
         </dl>
       </li>
@@ -73,12 +73,10 @@
       })
 
       Vue.onMounted(() => {
-        // getHome()
         getMenuTree()
       })
 
       const getHome = (menu) => {
-        console.info(menu)
         Vue.nextTick(() => {
           layui.use(['element', 'jquery'], function () {
             state.element = layui.element
@@ -92,7 +90,7 @@
             //  添加id到已打开的id列表中
             state.ids.push(menu.id.toString())
             //  将首页添加到🍞屑中
-            state.breads.push({id: menu.id, name: menu.name})
+            state.breads.push({id: menu.id, name: menu.label})
             //  切换至首页
             state.element.tabChange('tabs', menu.id)
             //  隐藏首页关闭按钮
@@ -150,31 +148,22 @@
       }
 
       const getTitle = (id) => {
-        const _this = this
         state.breads = []
-        state.breads.push({
-          id: 0,
-          name: '首页'
+        state.menuList.forEach((item) => {
+          if (item.children && item.children.length > 0){
+            item.children.forEach((child) => {
+              if (child.id + '' === id){
+                state.breads.push(item)
+                state.breads.push(child)
+              }
+            })
+          }
         })
-        if (id !== 0){
-          state.menuList.forEach((item) => {
-            if (item.children && item.children.length > 0){
-              item.children.forEach((child) => {
-                if (child.id + '' === id){
-                  state.breads.push(item)
-                  state.breads.push(child)
-                }
-              })
-            }
-          })
-        }
       }
 
       const toHome = (id) => {
-        if (id === 0){
-          state.element.tabChange('tabs', 0)
-          getTitle(0)
-        }
+        state.element.tabChange('tabs', id)
+        getTitle(id)
       }
 
       const createIframe = (url) => {

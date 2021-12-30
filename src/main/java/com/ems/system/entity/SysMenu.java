@@ -34,4 +34,28 @@ public class SysMenu extends BaseEntity {
     private int sort;
 
     private String type;
+
+    private String permission;
+
+    @Override
+    public boolean equals(Object object){
+        if (object == null){
+            return false;
+        }
+        if (this == object){
+            return true;
+        }
+        if (object instanceof SysMenu){
+            SysMenu sysMenu = (SysMenu) object;
+            if (sysMenu.getId().equals(this.id)){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return id.hashCode();
+    }
 }

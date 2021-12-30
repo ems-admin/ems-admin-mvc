@@ -20,16 +20,17 @@
     <!--根据角色获取菜单列表-->
     <select id="getMenuUrlByRole" resultType="java.lang.String">
         SELECT
-        t1.path
+            t1.path
         FROM
-        sys_menu t1
+            sys_menu t1
         LEFT JOIN sys_role_menu t2 ON t1.id = t2.menu_id
         LEFT JOIN sys_role t3 ON t2.role_id = t3.id
         WHERE
-        t3.role_code IN
+            t3.role_code IN
         <foreach collection="roles" item="role" open="(" separator="," close=")">
             #{role}
         </foreach>
+        AND t1.path IS NOT NULL
     </select>
 
     <!--根据角色获取菜单-->
@@ -42,8 +43,8 @@
         SELECT T2.* FROM (
                              SELECT @r AS _id,(
                 SELECT @r :=parent_id FROM sys_menu WHERE id=_id) AS parent_id,@l :=@l+1 AS lvl FROM (
-                                 SELECT @r :=17,@l :=0) vars,sys_menu h) T1 JOIN sys_menu T2 ON T1._id=T2.id
-        ORDER BY T2.id
+                                 SELECT @r := #{menuId} ,@l :=0) vars,sys_menu h) T1 JOIN sys_menu T2 ON T1._id=T2.id
+        ORDER BY T2.sort
     </select>
 
 </mapper>

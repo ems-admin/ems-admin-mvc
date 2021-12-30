@@ -9,6 +9,7 @@ import com.ems.common.utils.StringUtil;
 import com.ems.config.config.RedisConfig;
 import com.ems.system.entity.SysMenu;
 import com.ems.system.service.SysMenuService;
+import com.google.common.base.Joiner;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -66,9 +67,9 @@ public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
                 //  将认证信息保存在spring安全上下文中
                 SecurityContextHolder.getContext().setAuthentication(authentication);
                 //  判断请求路径是否有效
-//                if (!checkURI(request.getRequestURI())){
-//                    throw new BadRequestException("没有访问权限");
-//                }
+                if (!checkURI(request.getRequestURI())){
+                    throw new BadRequestException("没有访问权限");
+                }
                 //  放行请求
                 filterChain.doFilter(request, response);
             } else {
@@ -117,22 +118,23 @@ public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
         try {
             boolean b = false;
             List<String> menuList = new ArrayList<>();
+            String menuKey = "menu_" + SecurityUtil.getCurrentUserId();
             //  从redis中获取该用户的所有菜单权限
-            Object object = redisUtil.getValue("menu");
+            Object object = redisUtil.getValue(menuKey);
             //  如果不存在就重新获取
             if (object == null){
                 menuList = menuService.getMenuUrlByRole(SecurityUtil.getCurrentRoles());
                 //  添加通过的无法添加权限的两个页面
                 menuList.add("/main.html");
-                menuList.add("/index.html");
+//                menuList.add("/index.html");
                 //   并将得到的菜单列表保存进redis中
                 if (!CollectionUtils.isEmpty(menuList)){
-                    redisUtil.setValue("menu", menuList.toString(), 7200L, TimeUnit.SECONDS);
+                    redisUtil.setValue(menuKey, Joiner.on(",").join(menuList), 7200L, TimeUnit.SECONDS);
                 } else {
                     return false;
                 }
             } else {
-                menuList = Collections.singletonList(Objects.requireNonNull(redisUtil.getValue("menu")).toString());
+                menuList = Arrays.asList(redisUtil.getValue(menuKey).split(","));
             }
 
             if (menuList.contains(url)){
