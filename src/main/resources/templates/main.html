@@ -33,7 +33,7 @@
         <!--面包屑-->
         <span class="layui-breadcrumb">
           <span  v-for="(item, index) in state.breads" :key="index" >
-            <a href="javascript:" @click="toHome(item.id)">{{item.label}}</a>
+            <a href="javascript:" @click="toHome(item.id, index)">{{item.label}}</a>
             <span v-if="index < state.breads.length - 1" lay-separator>/</span>
           </span>
         </span>
@@ -128,9 +128,10 @@
                 state.element.tabChange('tabs', id)
                 //  切换🍞屑
                 state.element.on('tab(tabs)', function (data) {
-                  console.info()
-                  if (data.elem.context.activeElement.id){
+                  if (data.elem.context.activeElement && data.elem.context.activeElement.id){
                     getTitle(data.elem.context.activeElement.id)
+                  } else if (data.elem.context.attributes && data.elem.context.attributes.length > 0){
+                    getTitle(data.elem.context.attributes[0].value)
                   }
                 })
               })
@@ -164,9 +165,12 @@
         })
       }
 
-      const toHome = (id) => {
-        state.element.tabChange('tabs', id)
-        getTitle(id)
+      const toHome = (id, index) => {
+        //  🍞屑只有点击首页才有效
+        if (index === 0){
+          state.element.tabChange('tabs', id)
+          getTitle(id)
+        }
       }
 
       const createIframe = (url) => {
