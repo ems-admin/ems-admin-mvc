@@ -33,7 +33,7 @@
         <!--面包屑-->
         <span class="layui-breadcrumb">
           <span  v-for="(item, index) in state.breads" :key="index" >
-            <a href="javascript:" @click="toHome(item.id)">{{item.name}}</a>
+            <a href="javascript:" @click="toHome(item.id)">{{item.label}}</a>
             <span v-if="index < state.breads.length - 1" lay-separator>/</span>
           </span>
         </span>
@@ -90,7 +90,7 @@
             //  添加id到已打开的id列表中
             state.ids.push(menu.id.toString())
             //  将首页添加到🍞屑中
-            state.breads.push({id: menu.id, name: menu.label})
+            state.breads.push({id: menu.id, label: menu.label})
             //  切换至首页
             state.element.tabChange('tabs', menu.id)
             //  隐藏首页关闭按钮
@@ -128,8 +128,9 @@
                 state.element.tabChange('tabs', id)
                 //  切换🍞屑
                 state.element.on('tab(tabs)', function (data) {
-                  if (data.elem.context.attributes && data.elem.context.attributes.length > 0){
-                    getTitle(data.elem.context.attributes[0].value)
+                  console.info()
+                  if (data.elem.context.activeElement.id){
+                    getTitle(data.elem.context.activeElement.id)
                   }
                 })
               })
@@ -157,6 +158,8 @@
                 state.breads.push(child)
               }
             })
+          } else {
+            state.breads.push(item)
           }
         })
       }
