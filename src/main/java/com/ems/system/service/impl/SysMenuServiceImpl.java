@@ -249,6 +249,29 @@ public class SysMenuServiceImpl implements SysMenuService {
     }
 
     /**
+     * @param roles
+     * @Description: 获取按钮权限列表
+     * @Param: [roles]
+     * @return: java.util.List<java.lang.String>
+     * @Author: starao
+     * @Date: 2022/1/15
+     */
+    @Override
+    public List<String> btnList(List<String> roles) {
+        List<SysMenu> menuList;
+        //  如果是管理员，直接取所有
+        if (roles.contains(CommonConstants.ROLE_ADMIN)){
+            LambdaQueryWrapper<SysMenu> wrapper = new LambdaQueryWrapper<>();
+            wrapper.eq(SysMenu::getType, "3");
+            menuList = menuMapper.selectList(wrapper);
+        } else {
+            menuList = menuMapper.getMenuTree(roles);
+            menuList = menuList.stream().filter((item) -> "3".equals(item.getType())).collect(Collectors.toList());
+        }
+        return menuList.stream().map(p -> p.getPermission()).collect(Collectors.toList());
+    }
+
+    /**
      * @Description: 获取子菜单
      * @Param: [menuListAll, id, title, menuIds]
      * @return: com.alibaba.fastjson.JSONArray

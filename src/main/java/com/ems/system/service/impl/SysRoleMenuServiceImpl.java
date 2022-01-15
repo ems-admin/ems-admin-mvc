@@ -2,9 +2,13 @@ package com.ems.system.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.ems.common.exception.BadRequestException;
+import com.ems.common.utils.RedisUtil;
 import com.ems.system.entity.SysRoleMenu;
+import com.ems.system.entity.SysRoleUser;
+import com.ems.system.entity.SysUser;
 import com.ems.system.entity.dto.RoleMenuDto;
 import com.ems.system.mapper.SysRoleMenuMapper;
+import com.ems.system.mapper.SysRoleUserMapper;
 import com.ems.system.service.SysRoleMenuService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -24,6 +28,10 @@ import java.util.List;
 public class SysRoleMenuServiceImpl implements SysRoleMenuService {
 
     private final SysRoleMenuMapper roleMenuMapper;
+
+    private final RedisUtil redisUtil;
+
+    private final SysRoleUserMapper roleUserMapper;
 
     /**
      * @param roleId
@@ -69,6 +77,16 @@ public class SysRoleMenuServiceImpl implements SysRoleMenuService {
                     roleMenuMapper.insert(roleMenu);
                 });
             }
+            //  清空对应角色所有用户的权限缓存
+            LambdaQueryWrapper<SysRoleUser> wrapper = new LambdaQueryWrapper<>();
+            wrapper.eq(SysRoleUser::getRoleId, roleId);
+            List<SysRoleUser> roleUserList =  roleUserMapper.selectList(wrapper);
+            if (!CollectionUtils.isEmpty(roleUserList)){
+                for (SysRoleUser roleUser : roleUserList) {
+                    redisUtil.clearValue("menu_" + roleUser.getUserId());
+                }
+            }
+
         } catch (BadRequestException e) {
             e.printStackTrace();
             throw new BadRequestException(e.getMsg());

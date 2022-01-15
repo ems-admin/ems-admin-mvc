@@ -117,7 +117,7 @@ public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
     private boolean checkURI(String url){
         try {
             boolean b = false;
-            List<String> menuList = new ArrayList<>();
+            List<String> menuList;
             String menuKey = "menu_" + SecurityUtil.getCurrentUserId();
             //  从redis中获取该用户的所有菜单权限
             Object object = redisUtil.getValue(menuKey);

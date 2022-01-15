@@ -47,4 +47,15 @@ public final class RedisUtil {
 
     }
 
+    /**
+    * @Description: 删除对应key的值
+    * @Param: [key]
+    * @return: void
+    * @Author: starao
+    * @Date: 2022/1/16
+    */
+    public void clearValue(String key){
+        redisTemplate.delete(key);
+    }
+
 }

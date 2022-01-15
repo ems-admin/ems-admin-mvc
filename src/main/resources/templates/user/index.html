@@ -18,7 +18,7 @@
             </div>
             <div class="layui-col-sm4">
                 <div style="text-align: right;">
-                    <button type="button" class="layui-btn layui-btn-sm layui-btn-normal" @click="editUser">新增</button>
+                    <button v-if="hasPer('user:edit')" type="button" class="layui-btn layui-btn-sm layui-btn-normal" @click="editUser">新增</button>
                 </div>
             </div>
         </div>
@@ -137,7 +137,8 @@
       return {
         state,
         getUserTable,
-        editUser
+        editUser,
+        hasPer
       }
     }
   }

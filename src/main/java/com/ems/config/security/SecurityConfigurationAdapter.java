@@ -67,6 +67,7 @@ public class SecurityConfigurationAdapter extends WebSecurityConfigurerAdapter {
     public void configure(WebSecurity webSecurity){
         webSecurity.ignoring()
                 .antMatchers(HttpMethod.GET, "/login.html")
+                .antMatchers(HttpMethod.GET, "/index.html")
                 .antMatchers(HttpMethod.GET, "/error/401.html")
                 .antMatchers(HttpMethod.POST,SecurityConstants.AUTH_LOGIN_URL, "/auth/register")
                 .antMatchers("/static/**")

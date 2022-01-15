@@ -84,4 +84,13 @@ public interface SysMenuService {
     * @Date: 2021/11/28
     */
     List<String> getMenuUrlByRole(List<String> roles);
+
+    /**
+    * @Description: 获取按钮权限列表
+    * @Param: [roles]
+    * @return: java.util.List<java.lang.String>
+    * @Author: starao
+    * @Date: 2022/1/15
+    */
+    List<String> btnList(List<String> roles);
 }

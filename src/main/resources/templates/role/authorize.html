@@ -65,7 +65,7 @@
         Vue.nextTick(() => {
 
           //获得选中的节点
-          const checkData = state.el.getChecked(true, false, true)
+          const checkData = state.el.getChecked(false, true, true)
           console.info(checkData)
           state.menuIds = []
           state.menuIds = getMenuIds(checkData, state.menuIds)

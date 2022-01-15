@@ -1,5 +1,7 @@
 package com.ems.system.controller;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.ems.common.exception.BadRequestException;
 import com.ems.common.utils.ResultUtil;
 import com.ems.common.utils.SecurityUtil;
@@ -38,7 +40,13 @@ public class SysMenuController extends ResultUtil {
     public ResponseEntity<Object> getMenuTree(){
         try {
             List<String> roles = SecurityUtil.getCurrentRoles();
-            return success(true, menuService.getMenuTree(roles));
+            JSONArray jsonArray = menuService.getMenuTree(roles);
+            //  获取按钮权限列表
+            List<String> btnList = menuService.btnList(roles);
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("menu", jsonArray);
+            jsonObject.put("btn", btnList);
+            return success(true, jsonObject);
         } catch (BadRequestException e) {
             e.printStackTrace();
             return fail(false, e.getMsg());

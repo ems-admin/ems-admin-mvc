@@ -13,3 +13,10 @@ function waringMsg(msg){
 function infoMsg(msg){
     layer.alert(msg, {icon: 0})
 }
+
+function hasPer(per){
+    const permission = sessionStorage.getItem('btn').split(',')
+    console.info(permission)
+    console.info(permission.indexOf(per))
+    return permission.indexOf(per) > -1
+}
