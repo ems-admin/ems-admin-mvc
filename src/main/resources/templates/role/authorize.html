@@ -8,7 +8,7 @@
 </head>
 <body class="body" style="padding-top: 30px;padding-left: 50px;padding-right: 50px;">
 <div id="app">
-    <div id="tree" class="tree" style="height: 260px;"></div>
+    <div id="tree" class="tree"></div>
     <div class="btn-div">
         <button class="layui-btn layui-btn-sm layui-btn-primary btn-save" @click="cancel">取消</button>
         <button class="layui-btn layui-btn-sm layui-btn-normal btn-save" @click="authorize">授权</button>
@@ -26,17 +26,14 @@
     setup(){
       const state = Vue.reactive({
         roleId: '',
-        menuIds: []
+        menuIds: [],
+        el: null
       })
 
       //    获取所有菜单
       const getMenuTree = () => {
         get('/sys/menu/role/tree', {roleId: state.roleId}).then(res => {
           if (res.success){
-            // Vue.nextTick(() => {
-            //   const tree = layui.tree
-            //   renderTree(tree, res.data)
-            // })
             Vue.nextTick(() => {
               layui.config({
                 base: '../../static/js/'
@@ -51,7 +48,7 @@
       }
 
       const renderTree = (eleTree, data) => {
-        const el = eleTree({
+        state.el = eleTree({
           el: '.tree',
           data: data,
           showCheckbox: true,
@@ -62,25 +59,16 @@
             type: 'asc'
           }
         })
-        // eletree.render({
-        //   elem: '#tree',
-        //   id: 'tree_id',
-        //   data: data,
-        //   showCheckbox: true,
-        //   accordion: true
-        // })
-        //
-        // tree.setChecked('tree_id', 2)
-        // tree.reload('tree')
       }
 
       const authorize = () => {
         Vue.nextTick(() => {
-          const tree = layui.tree
+
           //获得选中的节点
-          const checkData = tree.getChecked('tree_id')
+          const checkData = state.el.getChecked(true, false, true)
+          console.info(checkData)
           state.menuIds = []
-          state.menuIds = getChildNodes(checkData, state.menuIds)
+          state.menuIds = getMenuIds(checkData, state.menuIds)
           post('/sys/role/menu/edit', {roleId: state.roleId, menuIds: state.menuIds}).then(res => {
             if (res.success){
               cancel()
@@ -94,17 +82,9 @@
       }
 
       //  获取所有选中的节点ID
-      const getChildNodes = (treeNode, result) => {
+      const getMenuIds = (treeNode, result) => {
         for (const i in treeNode) {
             result.push(treeNode[i].id)
-          if (treeNode[i].children && treeNode[i].children.length > 0){
-            getChildNodes(treeNode[i].children, result)
-          }
-          // if (treeNode[i].children && treeNode[i].children.length === 0){
-          //   result.push(treeNode[i].id)
-          // } else {
-          //   getChildNodes(treeNode[i].children, result)
-          // }
         }
         return result
       }
@@ -128,4 +108,11 @@
       vue.getMenuTree()
   }
 </script>
+<style>
+    .tree{
+        height: 260px;
+        position: relative;
+        overflow-y: auto;
+    }
+</style>
 </html>
