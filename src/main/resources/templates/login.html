@@ -22,6 +22,12 @@
             </div>
         </div>
         <div class="layui-form-item">
+            <div class="layui-inline" style="display: inline-flex">
+                <input type="text" name="code" lay-verify="required" class="layui-input login-input" style="width: 170px;" placeholder="请输入验证码">
+                <img :src="state.img" style="margin-left: 20px;cursor: pointer;" @click="getVerifyCode">
+            </div>
+        </div>
+        <div class="layui-form-item">
             <div class="layui-inline">
                 <button type="button" class="layui-btn layui-btn-fluid login-input" lay-submit lay-filter="login" @click="login">登     录</button>
             </div>
@@ -38,6 +44,22 @@
 <script>
   const app = {
     setup(){
+      const state = Vue.reactive({
+        img: '',
+        uuid: ''
+      })
+
+      Vue.onMounted(() => {
+        getVerifyCode()
+      })
+
+      const getVerifyCode = () => {
+        get('/auth/code', null).then(res => {
+          state.img = res.img
+          state.uuid = res.uuid
+        })
+      }
+
       const login = () => {
         Vue.nextTick(() => {
           layui.use('form', function () {
@@ -60,6 +82,8 @@
       }
 
       return {
+        state,
+        getVerifyCode,
         login
       }
     }
