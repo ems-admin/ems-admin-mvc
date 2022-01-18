@@ -37,7 +37,7 @@
     setup(){
       const state = Vue.reactive({
         status: '',
-        blurry: ''
+        blurry: '',
       })
 
       Vue.onMounted(() => {
@@ -71,9 +71,19 @@
             { field: 'option', title: '操作', width: 180, align: 'center', templet: function (data) {
                 const status = data.enabled === false ? '启用' : '停用'
                 if (data.roles.indexOf('ROLE_ADMIN') === -1){
-                  return '<a class="layui-btn layui-btn-xs layui-btn-warm" lay-event="status">'+status+'</a>' +
-                      '<a class="layui-btn layui-btn-xs" lay-event="edit">修改</a>' +
-                      '<a class="layui-btn layui-btn-xs layui-btn-danger" lay-event="del">删除</a>'
+                  let statusHtml = ''
+                  let editHtml = ''
+                  let delHtml = ''
+                  if (hasPer('user:enabled')){
+                    statusHtml = '<a class="layui-btn layui-btn-xs layui-btn-warm" lay-event="status">'+status+'</a>'
+                  }
+                  if (hasPer('user:edit')){
+                    editHtml = '<a class="layui-btn layui-btn-xs" lay-event="edit">修改</a>'
+                  }
+                  if (hasPer('user:del')){
+                    delHtml = '<a class="layui-btn layui-btn-xs layui-btn-danger" lay-event="del">删除</a>'
+                  }
+                  return statusHtml + editHtml + delHtml
                 } else {
                   return ''
                 }

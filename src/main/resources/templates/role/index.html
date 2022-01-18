@@ -18,7 +18,7 @@
             </div>
             <div class="layui-col-sm4">
                 <div style="text-align: right;">
-                    <button type="button" class="layui-btn layui-btn-sm layui-btn-normal" @click="editRole">新增</button>
+                    <button v-if="hasPer('role:edit')" type="button" class="layui-btn layui-btn-sm layui-btn-normal" @click="editRole">新增</button>
                 </div>
             </div>
         </div>
@@ -66,9 +66,20 @@
             { field: 'roleCode', title: '角色代码'},
             { field: 'description', title: '描述'},
             { field: 'option', title: '操作', width: 200, align: 'center', templet: function (data) {
-                return '<a class="layui-btn layui-btn-xs layui-btn-normal" lay-event="authorize">授权</a>' +
-                    '<a class="layui-btn layui-btn-xs" lay-event="edit">修改</a>' +
-                    '<a class="layui-btn layui-btn-xs layui-btn-danger" lay-event="del">删除</a>'
+              let authorizeHtml = ''
+              let editHtml = ''
+              let delHtml = ''
+              if (hasPer('role:authorize')){
+                authorizeHtml = '<a class="layui-btn layui-btn-xs layui-btn-normal" lay-event="authorize">授权</a>'
+              }
+              if (hasPer('role:edit')){
+                editHtml = '<a class="layui-btn layui-btn-xs" lay-event="edit">修改</a>'
+              }
+              if (hasPer('role:del')){
+                delHtml = '<a class="layui-btn layui-btn-xs layui-btn-danger" lay-event="del">删除</a>'
+              }
+                return authorizeHtml + editHtml + delHtml
+
               } },
           ]],
           data: data ? data : []
@@ -138,7 +149,8 @@
         state,
         getRoleList,
         editRole,
-        delRole
+        delRole,
+        hasPer
       }
     }
   }
