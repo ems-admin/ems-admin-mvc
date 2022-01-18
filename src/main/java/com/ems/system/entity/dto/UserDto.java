@@ -28,4 +28,8 @@ public class UserDto {
     private List<String> roles;
 
     private Boolean enabled;
+
+    private String code;
+
+    private String uuid;
 }

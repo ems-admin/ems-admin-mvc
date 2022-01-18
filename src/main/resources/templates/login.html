@@ -11,6 +11,7 @@
 <div id="app" class="login-div">
     <form class="layui-form login-form">
         <h1 class="login-head">登    录</h1>
+        <input v-model="state.uuid" name="uuid" style="display: none;">
         <div class="layui-form-item">
             <div class="layui-inline">
                 <input type="text" name="username" lay-verify="required" class="layui-input login-input" placeholder="请输入用户名">
@@ -73,6 +74,8 @@
                   window.location.href = "/main.html"
                 } else {
                   errorMsg(res.msg)
+                  // 刷新验证码
+                  getVerifyCode()
                 }
               })
             })

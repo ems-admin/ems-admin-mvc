@@ -5,6 +5,7 @@ import com.ems.common.exception.BadRequestException;
 import com.ems.common.utils.JwtUtil;
 import com.ems.common.utils.RedisUtil;
 import com.ems.common.utils.ResultUtil;
+import com.ems.common.utils.StringUtil;
 import com.ems.config.security.JwtUser;
 import com.ems.logs.annotation.Log;
 import com.ems.system.entity.SysRole;
@@ -52,6 +53,8 @@ public class LoginController extends ResultUtil {
     @PostMapping("/login")
     public ResponseEntity<Object> login(@RequestBody UserDto userDto, HttpServletRequest request){
         try {
+            //  首页校验验证码
+            verifyCode(userDto.getUuid(), userDto.getCode());
             //  根据用户名查询用户是否存在
             SysUser user = userService.findByName(userDto.getUsername());
             if (user == null){
@@ -134,5 +137,11 @@ public class LoginController extends ResultUtil {
             put("uuid", uuid);
         }};
         return ResponseEntity.ok(imgResult);
+    }
+
+    private void verifyCode(String uuid, String code){
+        if (StringUtil.isNotBlank(redisUtil.getValue(uuid)) && !redisUtil.getValue(uuid).equals(code)){
+            throw new BadRequestException("验证码错误");
+        }
     }
 }
