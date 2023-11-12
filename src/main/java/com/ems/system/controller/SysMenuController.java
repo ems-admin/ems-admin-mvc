@@ -1,13 +1,12 @@
 package com.ems.system.controller;
 
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson2.JSONArray;
+import com.alibaba.fastjson2.JSONObject;
 import com.ems.common.exception.BadRequestException;
 import com.ems.common.utils.ResultUtil;
 import com.ems.common.utils.SecurityUtil;
 import com.ems.logs.annotation.Log;
 import com.ems.system.entity.SysMenu;
-import com.ems.system.mapper.SysRoleMenuMapper;
 import com.ems.system.service.SysMenuService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

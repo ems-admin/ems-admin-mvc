@@ -6,6 +6,7 @@ import com.ems.common.utils.StringUtil;
 import com.ems.common.utils.ThrowsUtil;
 import com.ems.system.entity.SysLog;
 import com.ems.system.service.SysLogService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -14,8 +15,6 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.springframework.stereotype.Component;
-
-import javax.servlet.http.HttpServletRequest;
 
 /**
  * @program: ems-admin-mvc

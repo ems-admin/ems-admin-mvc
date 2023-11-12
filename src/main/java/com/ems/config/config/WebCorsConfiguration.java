@@ -46,7 +46,7 @@ public class WebCorsConfiguration implements WebMvcConfigurer {
     */
     @Override
     public void addViewControllers(ViewControllerRegistry registry) {
-        registry.addViewController("/").setViewName("main");
+        registry.addViewController("/").setViewName("main.html");
         registry.setOrder(Ordered.HIGHEST_PRECEDENCE);
         WebMvcConfigurer.super.addViewControllers(registry);
     }
