@@ -11,7 +11,7 @@
     width: 400px;
     height: 350px;
     text-align: center;
-    background: #999999;
+    background: #ffffff;
 }
 
 .login-input{
@@ -59,7 +59,7 @@
 }
 
 .iframe{
-    height: calc(100vh - 100px);
+    height: calc(100vh - 110px);
     width: 100%;
     border: none;
 }

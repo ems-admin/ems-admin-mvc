@@ -11,20 +11,23 @@
 <div id="app" class="login-div">
     <form class="layui-form login-form">
         <h1 class="login-head">登    录</h1>
-        <input v-model="state.uuid" name="uuid" style="display: none;">
+        <input name="uuid" style="display: none;">
         <div class="layui-form-item">
             <div class="layui-inline">
-                <input type="text" name="username" lay-verify="required" class="layui-input login-input" placeholder="请输入用户名">
+                <input type="text" name="username" lay-verify="required" autocomplete="off"
+                       class="layui-input login-input" placeholder="请输入用户名">
             </div>
         </div>
         <div class="layui-form-item">
             <div class="layui-inline">
-                <input type="password" name="password" lay-verify="required" class="layui-input login-input" placeholder="请输入密码">
+                <input type="password" name="password" lay-verify="required" autocomplete="off"
+                       class="layui-input login-input" placeholder="请输入密码">
             </div>
         </div>
         <div class="layui-form-item">
             <div class="layui-inline" style="display: inline-flex">
-                <input type="text" name="code" lay-verify="required" class="layui-input login-input" style="width: 170px;" placeholder="请输入验证码">
+                <input type="text" name="code" lay-verify="required" autocomplete="off"
+                       class="layui-input login-input" style="width: 170px;" placeholder="请输入验证码">
                 <img :src="state.img" style="margin-left: 20px;cursor: pointer;" @click="getVerifyCode">
             </div>
         </div>
@@ -41,7 +44,7 @@
 <script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
 <script src="../static/js/http.js"></script>
 <script src="../static/js/vue3.js"></script>
-<script src="../../static/js/common.js"></script>
+<script src="../static/js/common.js"></script>
 <script>
   const app = {
     setup(){
@@ -54,6 +57,7 @@
         getVerifyCode()
       })
 
+        //  获取验证码
       const getVerifyCode = () => {
         get('/auth/code', null).then(res => {
           state.img = res.img
@@ -61,6 +65,7 @@
         })
       }
 
+      //    登录
       const login = () => {
         Vue.nextTick(() => {
           layui.use('form', function () {

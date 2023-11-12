@@ -30,13 +30,6 @@
     <!--头-->
     <div class="layui-row head">
       <div class="layui-col-md6" style="margin-left: 10px;">
-        <!--面包屑-->
-        <span class="layui-breadcrumb">
-          <span  v-for="(item, index) in state.breads" :key="index" >
-            <a href="javascript:" @click="toHome(item.id, index)">{{item.label}}</a>
-            <span v-if="index < state.breads.length - 1" lay-separator>/</span>
-          </span>
-        </span>
       </div>
       <div class="layui-col-md6">
         <div style="float: right;margin-right: 50px;">
@@ -89,8 +82,6 @@
             })
             //  添加id到已打开的id列表中
             state.ids.push(menu.id.toString())
-            //  将首页添加到🍞屑中
-            state.breads.push({id: menu.id, label: menu.label})
             //  切换至首页
             state.element.tabChange('tabs', menu.id)
             //  隐藏首页关闭按钮
@@ -128,14 +119,6 @@
                 }
                 //  切换至当前tab
                 state.element.tabChange('tabs', id)
-                //  切换🍞屑
-                state.element.on('tab(tabs)', function (data) {
-                  if (data.elem.context.activeElement && data.elem.context.activeElement.id){
-                    getTitle(data.elem.context.activeElement.id)
-                  } else if (data.elem.context.attributes && data.elem.context.attributes.length > 0){
-                    getTitle(data.elem.context.attributes[0].value)
-                  }
-                })
               })
 
               //  删除tab
@@ -167,14 +150,6 @@
         })
       }
 
-      const toHome = (id, index) => {
-        //  🍞屑只有点击首页才有效
-        if (index === 0){
-          state.element.tabChange('tabs', id)
-          getTitle(id)
-        }
-      }
-
       const createIframe = (url) => {
         return '<iframe src="'+url+'" class="iframe" frameborder="0" scrolling="no"></iframe>'
       }
@@ -201,8 +176,7 @@
         })
       })
       return {
-        state,
-        toHome
+        state
       }
     }
   }
@@ -234,6 +208,7 @@
 
   .layui-tab-title .layui-this:after{
     height: 30px;
+    border-style: none;
   }
 
   .layui-tab-content{

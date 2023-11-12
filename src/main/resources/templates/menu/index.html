@@ -46,9 +46,7 @@
         get('/sys/menu/table/tree', {blurry: state.blurry}).then(res => {
           if (res.success){
             Vue.nextTick(() => {
-              layui.config({
-                base: '../../static/js/'
-              }).use(['treeTable','jquery', 'table'], function () {
+              layui.use(function () {
                 const treeTable = layui.treeTable
                 renderTable(treeTable, res.data)
               })
@@ -66,6 +64,9 @@
             isPidData: true,
             idName: 'id',
             pidName: 'parentId',
+            data: {
+              isSimpleData: true
+            }
           },
           cols: [[
             { field: 'id', title: 'ID', hide: true},
