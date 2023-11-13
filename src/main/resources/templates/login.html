@@ -11,16 +11,16 @@
 <div id="app" class="login-div">
     <form class="layui-form login-form">
         <h1 class="login-head">登    录</h1>
-        <input name="uuid" style="display: none;">
+        <input v-model="state.uuid" name="uuid" style="display: none;">
         <div class="layui-form-item">
             <div class="layui-inline">
-                <input type="text" name="username" lay-verify="required" autocomplete="off"
+                <input type="text" name="username" lay-verify="required" autocomplete="off" lay-affix="clear"
                        class="layui-input login-input" placeholder="请输入用户名">
             </div>
         </div>
         <div class="layui-form-item">
             <div class="layui-inline">
-                <input type="password" name="password" lay-verify="required" autocomplete="off"
+                <input type="password" name="password" lay-verify="required" autocomplete="off" lay-affix="eye"
                        class="layui-input login-input" placeholder="请输入密码">
             </div>
         </div>

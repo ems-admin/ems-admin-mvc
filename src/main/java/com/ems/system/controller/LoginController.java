@@ -49,7 +49,7 @@ public class LoginController extends ResultUtil {
 
     @Log("用户登录")
     @PostMapping("/login")
-    public ResponseEntity<Object> login(@RequestBody UserDto userDto, HttpServletRequest request){
+    public ResponseEntity<Object> login(@RequestBody UserDto userDto){
         try {
             //  校验验证码
             if (StringUtil.isBlank(userDto.getCode()) || !checkCode(userDto.getUuid(), userDto.getCode())){
@@ -105,43 +105,6 @@ public class LoginController extends ResultUtil {
             return fail(false, e.getMsg());
         }
     }
-    
-    /**
-    * @Description: 通过refreshToken得到新的token
-    * @Param: [request]
-    * @return: org.springframework.http.ResponseEntity<java.lang.Object>
-    * @Author: starao
-    * @Date: 2022/10/5
-    */
-//    @PutMapping("/refresh")
-//    public ResponseEntity<Object> refreshToken(HttpServletRequest request){
-//        try {
-//            //  通过请求头获取refreshToken
-//            String refreshToken = request.getHeader(SecurityConstants.TOKEN_HEADER);
-//            // 如果refreshToken存在
-//            if (StringUtil.isNotBlank(refreshToken)){
-//                //  去掉头部，得到原始refreshToken
-//                refreshToken = refreshToken.replaceFirst(SecurityConstants.TOKEN_PREFIX, "");
-//                //  解析refreshToken,得到用户名
-//                Claims claims = JwtUtil.getRefreshTokenBody(refreshToken);
-//                System.out.println(claims.getSubject());
-//                //  如果refreshToken还在有效期内
-//                if (claims.get("exp", Long.class) > 0){
-//                    //  获取当前用户信息
-//                    SysUser user = userService.findByName(claims.getSubject());
-//                    //  获取当前用户角色
-//                    List<String> roles = getRolesByUserId(user.getId());
-//                    //  重新获取token
-//                    String token = JwtUtil.generateToken(user.getUsername(), roles, false);
-//                    return success(true, token);
-//                }
-//            }
-//        } catch (BadRequestException e) {
-//            e.printStackTrace();
-//            return fail(false, e.getMsg());
-//        }
-//        return fail(false, "请重新登录");
-//    }
 
     /**
      * @Description: 获取验证码

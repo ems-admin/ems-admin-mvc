@@ -33,7 +33,10 @@
       </div>
       <div class="layui-col-md6">
         <div style="float: right;margin-right: 50px;">
-          <span id="username" class="username">{{state.username}}</span>
+          <span id="username" class="username" lay-options="{trigger: 'hover'}">
+            {{state.username}}
+            <i class="layui-icon layui-icon-down layui-font-12"></i>
+          </span>
         </div>
       </div>
     </div>
@@ -151,7 +154,7 @@
       }
 
       const createIframe = (url) => {
-        return '<iframe src="'+url+'" class="iframe" frameborder="0" scrolling="no"></iframe>'
+        return '<iframe src="'+url+'" class="iframe"></iframe>'
       }
 
       Vue.nextTick(() => {
@@ -159,10 +162,16 @@
         dropdown.render({
           elem: '#username',
           align: 'center',
-          data: [{
-            title: '退出',
-            id: 'logout',
-          }],
+          data: [
+            {
+              title: '修改密码',
+              id: 'updatePassword'
+            },
+            {
+              title: '退出登录',
+              id: 'logout'
+            }
+          ],
           style: 'text-align: center;',
           click: function (obj) {
             console.info(obj)
@@ -190,13 +199,20 @@
   .layui-tab-title{
     background-color: #FAFAFA;
     height: 30px;
-    padding-top: 5px;
-    padding-bottom: 5px;
+    line-height: 30px;
+    padding-top: 10px;
+    padding-bottom: 10px;
   }
 
-  .layui-tab-title li{
+  .layui-tab .layui-tab-title li{
+    height: 30px;
     line-height: 30px;
     font-size: 12px;
+  }
+
+  .layui-tab .layui-tab-title{
+    height: 30px;
+    line-height: 30px;
   }
 
   .layui-tab-title .layui-this{
@@ -219,5 +235,29 @@
     font-size: 18px;
     color: #009688;
   }
+
+  .layui-tab-title li .layui-tab-close{
+    color: white;
+  }
+
+  .layui-tab-title li .layui-tab-close:hover{
+    border-radius: 50%;
+    background-color: #c2c2c2;
+  }
+
+  .layui-tab-title .layui-this::before {
+    content: "";  /* 这是必需的，可以是空的 */
+    display: inline-block;
+    width: 10px;  /* 你可以根据需要调整这个值 */
+    height: 10px;  /* 你可以根据需要调整这个值 */
+    margin-right: 5px;  /* 在圆圈和文字之间添加一些空间 */
+    background-color: #ffffff;  /* 将这个值改为你需要的颜色 */
+    border-radius: 50%;  /* 这将使得元素形状为圆形 */
+    vertical-align: middle;  /* 这将使得圆圈垂直居中 */
+  }
+
+
+
+
 </style>
 </html>

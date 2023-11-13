@@ -32,7 +32,7 @@ public class VerifyCodeConstants {
     /**
      * 验证码高度
      */
-    public static int height = 36;
+    public static int height = 25;
     /**
      * 验证码字体
      */
@@ -40,5 +40,5 @@ public class VerifyCodeConstants {
     /**
      * 字体大小
      */
-    public static int fontSize = 25;
+    public static int fontSize = 24;
 }
