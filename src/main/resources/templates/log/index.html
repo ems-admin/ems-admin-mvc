@@ -8,28 +8,13 @@
 </head>
 <body class="body" style="padding: 20px;">
     <div id="app">
-        <div class="layui-row" style="margin-bottom: 20px;">
-            <div class="layui-col-sm3">
+        <div class="search-div">
+            <div class="layui-row" style="width: 100%;">
                 <div class="search-inline">
-                    <label class="label">用户名：</label>
-                    <input type="text" class="layui-input search-input" v-model="state.username" placeholder="">
-                </div>
-            </div>
-            <div class="layui-col-sm3">
-                <div class="search-inline">
-                    <label class="label">说明：</label>
-                    <input type="text" class="layui-input search-input" v-model="state.description" placeholder="">
-                </div>
-            </div>
-            <div class="layui-col-sm3">
-                <div class="search-inline layui-form">
-                    <label class="label">类型：</label>
-                    <select v-model="state.logType" lay-filter="logType">
-                        <option value="">全部</option>
-                        <option value="1">正常</option>
-                        <option value="2">异常</option>
-                    </select>
-                    <button type="button" class="layui-btn layui-btn-sm" style="margin-left: 20px;" @click="getLogs">查询</button>
+                    <input type="text" class="layui-input search-input" v-model="state.username" placeholder="请输入用户名">
+                    <input type="text" class="layui-input search-input" v-model="state.description" placeholder="请输入说明">
+                    <div id="logType" class="search-input"></div>
+                    <button type="button" class="layui-btn layui-btn-sm" @click="getLogs">查询</button>
                 </div>
             </div>
         </div>
@@ -40,6 +25,7 @@
     </div>
 </body>
 <script src="../../static/layui/layui.js"></script>
+<script src="../../static/js/xm-select.js"></script>
 <script src="../../static/js/axios.js"></script>
 <script src="../../static/js/http.js"></script>
 <script src="../../static/js/vue3.js"></script>
@@ -57,8 +43,30 @@
         })
 
         Vue.onMounted(() => {
-          getLogs()
+            renderType()
+            getLogs()
         })
+
+        //  渲染下拉框
+        const renderType = () => {
+            state.logType = xmSelect.render({
+                el: '#logType',
+                radio: true,
+                clickClose: true,
+                size: 'mini',
+                model: {
+                    icon: 'hidden',
+                    label: {
+                        type: 'text'
+                    }
+                },
+                data: [
+                    {name: '全部', value: ''},
+                    {name: '正常', value: '1'},
+                    {name: '异常', value: '2'},
+                ]
+            })
+        }
 
         const getPage = () =>{
             Vue.nextTick(() => {
@@ -89,7 +97,9 @@
               size: state.limit,
               username: state.username,
               description: state.description,
-              logType: state.logType
+          }
+          if (state.logType.getValue('valueStr')){
+              getData.logType = state.logType.getValue('valueStr')
           }
           console.log('logType' + state.logType)
           get('/sys/log/list', getData).then(res => {
@@ -137,21 +147,9 @@
                 }
             })
         }
-        const selectLogType = (value) => {
-          state.logType = value
-        }
-
-        Vue.nextTick(() => {
-          //  监听select事件
-          const form = layui.form
-          form.on('select(logType)', function (data){
-            selectLogType(data.value)
-          })
-        })
         return {
           state,
-          getLogs,
-          selectLogType
+          getLogs
         }
       }
     }
