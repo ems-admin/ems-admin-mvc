@@ -32,7 +32,7 @@
 
       //    获取所有菜单
       const getMenuTree = () => {
-        get('/sys/menu/role/tree', {roleId: state.roleId}).then(res => {
+        get('/api/sys/menu/role/tree', {roleId: state.roleId}).then(res => {
           if (res.success){
             Vue.nextTick(() => {
               layui.config({
@@ -69,7 +69,7 @@
           console.info(checkData)
           state.menuIds = []
           state.menuIds = getMenuIds(checkData, state.menuIds)
-          post('/sys/role/menu/edit', {roleId: state.roleId, menuIds: state.menuIds}).then(res => {
+          post('/api/sys/role/menu/edit', {roleId: state.roleId, menuIds: state.menuIds}).then(res => {
             if (res.success){
               cancel()
               getMenuTree()

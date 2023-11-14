@@ -94,7 +94,7 @@
       }
 
       const getMenuTree = () => {
-        get('/sys/menu/tree', null).then(res => {
+        get('/api/sys/menu/tree', null).then(res => {
           if (res.success){
             state.menuList = res.data.menu
             //  将按钮权限保存进本地缓存中

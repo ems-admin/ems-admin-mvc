@@ -54,7 +54,7 @@
         Vue.nextTick(() => {
           const form = layui.form
           form.on('submit(form)', function (data) {
-            post('/sys/role/edit', data.field).then(res => {
+            post('/api/sys/role/edit', data.field).then(res => {
               if (res.success){
                 successMsg(res.data)
                 window.parent.getChild()

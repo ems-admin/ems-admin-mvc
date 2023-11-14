@@ -16,6 +16,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.util.matcher.RegexRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.web.filter.CorsFilter;
 
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
@@ -56,14 +58,17 @@ public class SecurityConfiguration {
     */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        //  获取所有html文件路径
+        RequestMatcher htmlFiles = new RegexRequestMatcher(".+\\.html$", "");
         http.csrf(AbstractHttpConfigurer::disable)
                 .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable))
                 .authorizeHttpRequests(request -> request
-                        .requestMatchers(HttpMethod.GET, "/*", "index.html", SecurityConstants.HTML_LOGIN_URL, "/favicon.ico", "/auth/code").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/", "/favicon.ico", "/auth/code").permitAll()
                         .requestMatchers(HttpMethod.PUT, "/auth/refresh").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
-                        .requestMatchers("/static/js/**", "/static/layui/**",
-                                "/static/image/**", "/static/css/**").permitAll()
+                        .requestMatchers("/static/**").permitAll()
+                        //  放行所有的html文件
+                        .requestMatchers(htmlFiles).permitAll()
                         .anyRequest().authenticated())
                 .sessionManagement(manager -> manager.sessionCreationPolicy(STATELESS))
                 //  配置跨域

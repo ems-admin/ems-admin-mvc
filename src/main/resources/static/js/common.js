@@ -15,9 +15,6 @@ function infoMsg(msg){
 }
 
 function hasPer(per){
-    console.log(per)
     const permission = sessionStorage.getItem('btn').split(',')
-    console.info(permission)
-    console.info(permission.indexOf(per))
     return permission.indexOf(per) > -1
 }

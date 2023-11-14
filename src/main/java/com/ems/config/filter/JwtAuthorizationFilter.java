@@ -39,11 +39,12 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response,
                                     @NonNull FilterChain filterChain) throws ServletException, IOException {
         try {
-            System.out.println("请求路径:" + request.getRequestURI());
+            String url = request.getRequestURI();
+            System.out.println("请求路径:" + url);
             //  从request中获取token
             String token = this.getTokenFromHttpServletRequest(request);
-            //  如果token为空,则直接放行,然后由spring security进行判断是否有访问权限
-            if (StringUtil.isBlank(token)){
+            //  只要不是/api/开头的接口,则直接放行,然后由spring security进行判断是否有访问权限
+            if (!url.startsWith("/api/")){
                 //  放行请求
                 filterChain.doFilter(request, response);
                 return;
@@ -54,18 +55,25 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
                 Authentication authentication = JwtUtil.getAuthentication(token);
                 //  将认证信息保存在spring安全上下文中
                 SecurityContextHolder.getContext().setAuthentication(authentication);
-                //  放行请求
-                filterChain.doFilter(request, response);
+                if (request.getRequestURI().startsWith("/api/")) {
+                    // 修改请求路径，去除 "/api/" 前缀
+                    String newRequestURI = request.getRequestURI().substring(4);
+                    RequestDispatcher dispatcher = request.getRequestDispatcher(newRequestURI);
+                    dispatcher.forward(request, response);
+                } else {
+                    //  放行请求
+                    filterChain.doFilter(request, response);
+                }
             } else {
                 if (!response.isCommitted()){
-                    response.sendRedirect(SecurityConstants.HTML_LOGIN_URL);
+                    response.setStatus(HttpStatus.UNAUTHORIZED.value());
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
             //  token问题,统一跳转到登录页面
             if (!response.isCommitted()){
-                response.sendRedirect(SecurityConstants.HTML_LOGIN_URL);
+                response.setStatus(HttpStatus.UNAUTHORIZED.value());
             }
         }
     }

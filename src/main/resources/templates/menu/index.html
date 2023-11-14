@@ -43,7 +43,7 @@
       })
 
       const getTableTree = () =>{
-        get('/sys/menu/table/tree', {blurry: state.blurry}).then(res => {
+        get('/api/sys/menu/table/tree', {blurry: state.blurry}).then(res => {
           if (res.success){
             Vue.nextTick(() => {
               layui.use(function () {
@@ -126,7 +126,7 @@
         layer.confirm('确认删除菜单？', {
           btn: ['确认', '取消']
         }, function () {
-          remove('/sys/menu/del', {id: id}).then(res => {
+          remove('/api/sys/menu/del', {id: id}).then(res => {
             if (res.success){
               successMsg(res.data)
               getTableTree()

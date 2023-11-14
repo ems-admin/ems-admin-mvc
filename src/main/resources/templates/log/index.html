@@ -102,7 +102,7 @@
               getData.logType = state.logType.getValue('valueStr')
           }
           console.log('logType' + state.logType)
-          get('/sys/log/list', getData).then(res => {
+          get('/api/sys/log/list', getData).then(res => {
               if (res.success){
                 Vue.nextTick(() => {
                   const table = layui.table

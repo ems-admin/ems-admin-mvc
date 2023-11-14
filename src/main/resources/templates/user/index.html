@@ -45,7 +45,7 @@
       })
 
       const getUserTable = () => {
-        get('/sys/user/table', {blurry: state.blurry}).then(res => {
+        get('/api/sys/user/table', {blurry: state.blurry}).then(res => {
           if (res.success){
             Vue.nextTick(() => {
               const table = layui.table
@@ -118,7 +118,7 @@
       }
 
       const changeStatus = (id, enabled) => {
-        put('/sys/user/enabled', {id: id, enabled: enabled}).then(res => {
+        put('/api/sys/user/enabled', {id: id, enabled: enabled}).then(res => {
           if (res.success){
             successMsg(res.data)
             getUserTable()
@@ -132,7 +132,7 @@
         layer.confirm('确认删除用户？',{
           btn: ['确认', '取消']
         }, function () {
-          remove('/sys/user/del', {id: id}).then(res => {
+          remove('/api/sys/user/del', {id: id}).then(res => {
             if (res.success){
               successMsg(res.data)
               getUserTable()

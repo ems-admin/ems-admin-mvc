@@ -54,7 +54,7 @@
       })
 
       const getRoles = (userId) => {
-        get('/sys/role/select', {userId: userId}).then(res => {
+        get('/api/sys/role/select', {userId: userId}).then(res => {
           if (res.success){
             Vue.nextTick(() => {
               state.selected = xmSelect.render({
@@ -84,7 +84,7 @@
               return false
             }
             data.field.roles = state.roles
-            post('/sys/user/edit', data.field).then(res => {
+            post('/api/sys/user/edit', data.field).then(res => {
               if (res.success){
                 successMsg(res.data)
                 window.parent.getChild()

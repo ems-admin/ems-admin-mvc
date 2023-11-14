@@ -44,7 +44,7 @@
       })
 
       const getRoleList = () => {
-        get('/sys/role/table', {blurry: state.blurry}).then(res => {
+        get('/api/sys/role/table', {blurry: state.blurry}).then(res => {
           if (res.success){
             Vue.nextTick(() => {
               const table = layui.table
@@ -114,7 +114,7 @@
         layer.confirm('确认删除角色？', {
           btn: ['确认', '取消']
         }, function () {
-          remove('/sys/role/del', {id: id}).then(res => {
+          remove('/api/sys/role/del', {id: id}).then(res => {
             if (res.success){
               successMsg(res.data)
               getRoleList()

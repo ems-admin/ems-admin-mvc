@@ -14,6 +14,7 @@ function get(url, params) {
         }).then(res => {
             resolve(res.data)
         }).catch(err => {
+            resolveError(err)
             reject(err.data)
         })
     })
@@ -34,6 +35,7 @@ function put(url, data){
         }).then(res => {
             resolve(res.data)
         }).catch(err => {
+            resolveError(err)
             reject(err.data)
         })
     })
@@ -54,6 +56,7 @@ function post(url, data) {
         }).then(res => {
             resolve(res.data)
         }).catch(err => {
+            resolveError(err)
             reject(err.data)
         })
     })
@@ -76,7 +79,19 @@ function remove(url, params){
         }).then(res => {
             resolve(res.data)
         }).catch(err => {
+            resolveError(err)
             reject(err.data)
         })
     })
+}
+
+/**
+ * 如果是401错误,全部跳转到登录页面
+ * @param err
+ */
+function resolveError(err){
+    const result = err.response
+    if (result && result.status === 401){
+        window.location.href = "/login.html";
+    }
 }
