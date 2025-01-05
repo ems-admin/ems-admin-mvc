@@ -2,7 +2,7 @@
 
 #### 介绍
 ems-admin(easy manage system)是一套极简的后台管理系统，
-基于SpringBoot3.1.5、SpringSecurity6.x、Mybatis-plus3.4.3.4、Mysql8.0、
+基于SpringBoot3.4.1、SpringSecurity6.x、Mybatis-plus3.5.9、Mysql8.0、
 JWT、Vue3.0、Layui2.8.18开发，
 只提供最基础的登录、权限管理功能与日志功能，所有的业务功能，
 都可以根据自己的需要在此之上构建。
@@ -41,14 +41,17 @@ ems-admin-mvc是ems-admin的单体SpringBoot版本，前后端未分离，前端
 
 #### 交流反馈
 
-- ems-admin-mvc技术群: `211296170`
-
 
 - [issues 问题反馈](https://github.com/ems-admin/ems-admin-mvc/issues)
   (为方便管理，暂时只接受在github上面提交issues)
 
 
 - [更新日志](CHANGELOG.md)
+
+
+#### 必应壁纸
+
+-  如何对必应壁纸感兴趣，可以访问   [必应壁纸](https://bing.fullpx.com)
 
 
 #### 软件架构
